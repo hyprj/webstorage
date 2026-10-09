@@ -1,5 +1,6 @@
 import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
+// import { Button } from "@repo/ui/button";
+import { Button } from "../components/ui/button"
 import styles from "./page.module.css";
 
 type Props = Omit<ImageProps, "src"> & {
@@ -96,6 +97,7 @@ export default function Home() {
           />
           Go to turborepo.dev →
         </a>
+        <Button>click mee</Button>
       </footer>
     </div>
   );
