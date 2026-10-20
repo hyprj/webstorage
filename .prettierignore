@@ -1,0 +1,9 @@
+node_modules
+dist
+.next
+.turbo
+out
+coverage
+drizzle
+*.tsbuildinfo
+pnpm-lock.yaml
