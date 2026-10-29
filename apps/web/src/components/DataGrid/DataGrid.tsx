@@ -17,9 +17,9 @@ export function DataGrid<T>({ data, columns, getRowKey }: DataGridProps<T>) {
   return (
     <table className="w-full border-collapse text-left text-sm">
       <thead>
-        <tr className="border-b border-slate-200 text-slate-500">
+        <tr className="border-b border-border text-muted">
           {columns.map((column) => (
-            <th key={column.id} className="px-3 py-2 font-medium">
+            <th key={column.id} className="px-3 py-3 font-medium">
               {column.name}
             </th>
           ))}
@@ -29,7 +29,7 @@ export function DataGrid<T>({ data, columns, getRowKey }: DataGridProps<T>) {
         {data.map((row) => (
           <tr
             key={getRowKey(row)}
-            className="border-b border-slate-100 last:border-0"
+            className="border-b border-border/70 last:border-0"
           >
             {columns.map((column) => (
               <td key={column.id} className="px-3 py-2">

@@ -1,5 +1,8 @@
-import { useId, useRef, useState, type FormEvent } from "react";
-import { FilePlus2, LoaderCircle, X } from "lucide-react";
+import { useId, useState, type FormEvent } from "react";
+import { Button } from "../Button";
+import { Dialog } from "../Dialog";
+import { Icon } from "../Icon";
+import { Select } from "../Select";
 import type { Folder } from "../../features/foldersView/types";
 import { useAddFile } from "../../features/foldersView/useAddFile";
 
@@ -26,8 +29,8 @@ const fileTypes = [
 ] as const;
 
 export function AddFileButton({ folder }: { folder: Folder }) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const titleId = useId();
+  const [isOpen, setIsOpen] = useState(false);
+  const formId = useId();
   const [name, setName] = useState("");
   const [contentType, setContentType] = useState<string>(
     fileTypes[0].contentType,
@@ -41,11 +44,11 @@ export function AddFileButton({ folder }: { folder: Folder }) {
 
   function openDialog() {
     addFile.reset();
-    dialogRef.current?.showModal();
+    setIsOpen(true);
   }
 
   function closeDialog() {
-    dialogRef.current?.close();
+    setIsOpen(false);
     setName("");
     setContentType(fileTypes[0].contentType);
     setSize("0");
@@ -70,7 +73,7 @@ export function AddFileButton({ folder }: { folder: Folder }) {
       },
       {
         onSuccess: () => {
-          dialogRef.current?.close();
+          setIsOpen(false);
           setName("");
           setSize("0");
         },
@@ -80,48 +83,63 @@ export function AddFileButton({ folder }: { folder: Folder }) {
 
   return (
     <>
-      <button
-        type="button"
-        className="inline-flex shrink-0 items-center gap-1 rounded px-2 py-1 text-xs text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+      <Button
+        variant="ghost"
+        size="sm"
+        className="text-muted"
         onClick={openDialog}
         aria-label={`Add file to ${folder.name}`}
       >
-        <FilePlus2 className="size-4" aria-hidden="true" />
+        <Icon name="file-plus" className="size-4" aria-hidden="true" />
         Add file
-      </button>
-      <dialog
-        ref={dialogRef}
-        className="m-auto w-[min(28rem,calc(100%-2rem))] rounded-lg p-0 shadow-xl backdrop:bg-slate-950/40"
-        aria-labelledby={titleId}
-      >
-        <form className="space-y-4 p-5" onSubmit={handleSubmit}>
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 id={titleId} className="text-lg font-semibold">
-                Add a file
-              </h2>
-              <p className="text-sm text-slate-500">
-                Add simulated file metadata to {folder.name}.
-              </p>
-            </div>
-            <button
-              type="button"
-              className="rounded p-1 text-slate-500 hover:bg-slate-100"
+      </Button>
+      <Dialog
+        open={isOpen}
+        title="Add a file"
+        description={`Add simulated file metadata to ${folder.name}.`}
+        onClose={closeDialog}
+        footer={
+          <>
+            <Button
+              variant="secondary"
               onClick={closeDialog}
               disabled={addFile.isPending}
-              aria-label="Close dialog"
             >
-              <X className="size-4" aria-hidden="true" />
-            </button>
-          </div>
-
-          <label className="block space-y-1 text-sm">
-            <span className="font-medium">File name (without extension)</span>
-            <span className="flex items-center rounded border border-slate-300 focus-within:border-amber-500 focus-within:ring-1 focus-within:ring-amber-500">
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+              form={formId}
+              disabled={
+                addFile.isPending ||
+                !name.trim() ||
+                !Number.isSafeInteger(Number(size)) ||
+                Number(size) < 0
+              }
+            >
+              {addFile.isPending && (
+                <Icon
+                  name="loader"
+                  className="size-4 animate-spin"
+                  aria-hidden="true"
+                />
+              )}
+              Add file
+            </Button>
+          </>
+        }
+      >
+        <form id={formId} className="space-y-5" onSubmit={handleSubmit}>
+          <label className="block space-y-1.5 text-sm">
+            <span className="font-medium text-foreground">
+              File name (without extension)
+            </span>
+            <span className="flex min-h-10 items-center rounded-control border border-border bg-surface focus-within:border-brand-600 focus-within:ring-2 focus-within:ring-brand-100">
               <input
                 autoFocus
                 required
-                className="min-w-0 flex-1 rounded-l px-3 py-2 outline-none"
+                className="min-w-0 flex-1 bg-transparent px-3 py-2 text-foreground outline-none placeholder:text-muted"
                 value={name}
                 onChange={(event) => {
                   setName(event.target.value);
@@ -132,41 +150,37 @@ export function AddFileButton({ folder }: { folder: Folder }) {
                 placeholder="e.g. project-notes"
                 disabled={addFile.isPending}
               />
-              <span className="px-3 text-slate-500">
-                .{selectedType.extension}
-              </span>
+              <span className="px-3 text-muted">.{selectedType.extension}</span>
             </span>
           </label>
 
-          <label className="block space-y-1 text-sm">
-            <span className="font-medium">File type</span>
-            <select
-              className="w-full rounded border border-slate-300 px-3 py-2 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
-              value={contentType}
-              onChange={(event) => {
-                setContentType(event.target.value);
-                if (addFile.isError) {
-                  addFile.reset();
-                }
-              }}
-              disabled={addFile.isPending}
-            >
-              {fileTypes.map((fileType) => (
-                <option key={fileType.contentType} value={fileType.contentType}>
-                  {fileType.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Select
+            label="File type"
+            className="w-full"
+            value={contentType}
+            onChange={(event) => {
+              setContentType(event.target.value);
+              if (addFile.isError) {
+                addFile.reset();
+              }
+            }}
+            disabled={addFile.isPending}
+          >
+            {fileTypes.map((fileType) => (
+              <option key={fileType.contentType} value={fileType.contentType}>
+                {fileType.label}
+              </option>
+            ))}
+          </Select>
 
-          <label className="block space-y-1 text-sm">
-            <span className="font-medium">Size (bytes)</span>
+          <label className="block space-y-1.5 text-sm">
+            <span className="font-medium text-foreground">Size (bytes)</span>
             <input
               required
               type="number"
               min="0"
               step="1"
-              className="w-full rounded border border-slate-300 px-3 py-2 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+              className="min-h-10 w-full rounded-control border border-border bg-surface px-3 py-2 text-foreground outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-surface-subtle disabled:opacity-70"
               value={size}
               onChange={(event) => setSize(event.target.value)}
               disabled={addFile.isPending}
@@ -174,41 +188,15 @@ export function AddFileButton({ folder }: { folder: Folder }) {
           </label>
 
           {addFile.isError && (
-            <p className="text-sm text-red-600" role="alert">
+            <p
+              className="rounded-control bg-danger-50 px-3 py-2 text-sm text-danger-700"
+              role="alert"
+            >
               {addFile.error.message}
             </p>
           )}
-
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              className="rounded px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 disabled:opacity-60"
-              onClick={closeDialog}
-              disabled={addFile.isPending}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="inline-flex items-center gap-2 rounded bg-amber-500 px-3 py-2 text-sm text-white hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={
-                addFile.isPending ||
-                !name.trim() ||
-                !Number.isSafeInteger(Number(size)) ||
-                Number(size) < 0
-              }
-            >
-              {addFile.isPending && (
-                <LoaderCircle
-                  className="size-4 animate-spin"
-                  aria-hidden="true"
-                />
-              )}
-              Add file
-            </button>
-          </div>
         </form>
-      </dialog>
+      </Dialog>
     </>
   );
 }

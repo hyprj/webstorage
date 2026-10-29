@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
-import { LoaderCircle, Plus, X } from "lucide-react";
+import { Button } from "../Button";
+import { Icon } from "../Icon";
 import type { Folder } from "../../features/foldersView/types";
 import { useAddFolder } from "../../features/foldersView/useAddFolder";
 
@@ -30,15 +31,16 @@ export function AddFolderButton({ folder }: { folder: Folder }) {
 
   if (!isOpened) {
     return (
-      <button
-        type="button"
-        className="inline-flex shrink-0 items-center gap-1 rounded px-2 py-1 text-xs text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+      <Button
+        variant="ghost"
+        size="sm"
+        className="text-muted"
         onClick={() => setIsOpened(true)}
         aria-label={`Add subfolder to ${folder.name}`}
       >
-        <Plus className="size-4" aria-hidden="true" />
+        <Icon name="plus" className="size-4" aria-hidden="true" />
         Add folder
-      </button>
+      </Button>
     );
   }
 
@@ -46,7 +48,7 @@ export function AddFolderButton({ folder }: { folder: Folder }) {
     <form className="flex shrink-0 items-center gap-1" onSubmit={handleSubmit}>
       <input
         autoFocus
-        className="w-40 rounded border border-slate-300 px-2 py-1 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+        className="min-h-8 w-40 rounded-control border border-border bg-surface px-2 py-1 text-sm text-foreground outline-none focus:border-brand-600 focus:ring-2 focus:ring-brand-100"
         value={name}
         onChange={(event) => {
           setName(event.target.value);
@@ -59,27 +61,33 @@ export function AddFolderButton({ folder }: { folder: Folder }) {
         aria-invalid={addFolder.isError}
         disabled={addFolder.isPending}
       />
-      <button
+      <Button
         type="submit"
-        className="inline-flex items-center gap-1 rounded bg-amber-500 px-2 py-1 text-xs text-white hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
+        variant="primary"
+        size="sm"
         disabled={addFolder.isPending || !name.trim()}
       >
         {addFolder.isPending ? (
-          <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+          <Icon
+            name="loader"
+            className="size-4 animate-spin"
+            aria-hidden="true"
+          />
         ) : (
-          <Plus className="size-4" aria-hidden="true" />
+          <Icon name="plus" className="size-4" aria-hidden="true" />
         )}
         Add
-      </button>
-      <button
-        type="button"
-        className="rounded p-1 text-slate-500 hover:bg-slate-100"
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="size-8 min-h-8 px-0"
         onClick={closeForm}
         disabled={addFolder.isPending}
         aria-label="Cancel adding folder"
       >
-        <X className="size-4" aria-hidden="true" />
-      </button>
+        <Icon name="x" className="size-4" aria-hidden="true" />
+      </Button>
       {addFolder.isError && (
         <span className="text-xs text-red-600" role="alert">
           {addFolder.error.message}

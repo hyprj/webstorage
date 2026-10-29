@@ -1,10 +1,5 @@
-import {
-  AlertCircle,
-  ChevronDown,
-  ChevronRight,
-  LoaderCircle,
-} from "lucide-react";
 import type { Folder } from "../../features/foldersView/types";
+import { Icon } from "../Icon";
 import { FolderIcon } from "../Icon/folderIcon";
 
 export function FolderEntry({
@@ -29,23 +24,27 @@ export function FolderEntry({
   return (
     <button
       type="button"
-      className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-slate-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ${
+      className={`flex w-full items-center gap-2 rounded-control px-2 py-1.5 text-left text-sm text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 ${
         hasChildren === false
           ? "cursor-default"
-          : "cursor-pointer hover:bg-slate-100"
+          : "cursor-pointer hover:bg-surface-subtle"
       }`}
       style={{ paddingLeft: `${depth * 16}px` }}
       onClick={isExpanded ? onClose : onExpand}
       disabled={hasChildren === false}
       aria-expanded={hasChildren === false ? undefined : isExpanded}
     >
-      <span className="flex size-4 shrink-0 items-center justify-center text-slate-500">
+      <span className="flex size-4 shrink-0 items-center justify-center text-muted">
         {isLoading ? (
-          <LoaderCircle className="size-4 animate-spin" aria-label="Loading" />
+          <Icon
+            name="loader"
+            className="size-4 animate-spin"
+            aria-label="Loading"
+          />
         ) : hasChildren === false ? null : isExpanded ? (
-          <ChevronDown className="size-4" aria-hidden="true" />
+          <Icon name="chevron-down" className="size-4" aria-hidden="true" />
         ) : (
-          <ChevronRight className="size-4" aria-hidden="true" />
+          <Icon name="chevron-right" className="size-4" aria-hidden="true" />
         )}
       </span>
       <FolderIcon
@@ -65,8 +64,9 @@ export function FolderEntry({
           title="Error loading folder contents"
           className="ml-auto shrink-0"
         >
-          <AlertCircle
-            className="size-4 text-red-600"
+          <Icon
+            name="alert"
+            className="size-4 text-danger-600"
             role="img"
             aria-label="Error loading folder contents"
           />

@@ -1,1 +1,57 @@
 @import "tailwindcss";
+
+@theme {
+  --color-brand-50: oklch(0.98 0.03 80);
+  --color-brand-100: oklch(0.95 0.06 78);
+  --color-brand-500: oklch(0.72 0.16 68);
+  --color-brand-600: oklch(0.62 0.17 58);
+  --color-brand-700: oklch(0.52 0.15 52);
+
+  --color-danger-50: oklch(0.97 0.02 25);
+  --color-danger-100: oklch(0.93 0.05 25);
+  --color-danger-600: oklch(0.55 0.2 27);
+  --color-danger-700: oklch(0.47 0.18 27);
+
+  --color-surface: oklch(1 0 0);
+  --color-surface-subtle: oklch(0.98 0.004 250);
+  --color-border: oklch(0.91 0.01 250);
+  --color-foreground: oklch(0.24 0.02 255);
+  --color-muted: oklch(0.52 0.02 255);
+  --color-overlay: oklch(0.15 0.02 255);
+
+  --radius-control: 0.5rem;
+  --radius-panel: 0.875rem;
+
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --leading-body: 1.5;
+  --leading-heading: 1.2;
+}
+
+@layer base {
+  body {
+    @apply bg-surface-subtle font-sans leading-body text-foreground antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold leading-heading tracking-tight;
+  }
+
+  button,
+  input,
+  select {
+    font: inherit;
+  }
+
+  button:not(:disabled),
+  select:not(:disabled) {
+    cursor: pointer;
+  }
+}
