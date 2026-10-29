@@ -57,15 +57,18 @@ export function FolderEntry({
       <span className="truncate">{folder.name}</span>
       {isLoading && (
         <span role="status" className="sr-only">
-          Loading subfolders
+          Loading folder contents
         </span>
       )}
       {isError && (
-        <span title="Error loading subfolders" className="ml-auto shrink-0">
+        <span
+          title="Error loading folder contents"
+          className="ml-auto shrink-0"
+        >
           <AlertCircle
             className="size-4 text-red-600"
             role="img"
-            aria-label="Error loading subfolders"
+            aria-label="Error loading folder contents"
           />
         </span>
       )}

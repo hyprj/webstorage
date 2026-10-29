@@ -1,27 +1,35 @@
 import { DataGrid } from "../../components/DataGrid";
-import type { FolderGridRow } from "./types";
+import type { FolderContentRow } from "./types";
 import { useFoldersViewColumns } from "./useFoldersViewColumns";
 import { useFoldersViewData } from "./useFoldersViewData";
 
 export function FoldersView() {
-  const { rows, isError, isLoading } = useFoldersViewData();
+  const { rows, isError, isLoading, error } = useFoldersViewData();
   const columns = useFoldersViewColumns();
 
   if (isError) {
-    return <div>is error</div>;
+    return (
+      <div role="alert" className="text-sm text-red-600">
+        Failed to load folder contents: {error?.message}
+      </div>
+    );
   }
 
   if (isLoading) {
-    return <div>Loading folders...</div>;
+    return <div>Loading folder contents...</div>;
   }
 
   return (
     <div>
       /<div>same but via dataGrid</div>
-      <DataGrid<FolderGridRow>
+      <DataGrid<FolderContentRow>
         columns={columns}
         data={rows}
-        getRowKey={(row) => String(row.folder.id)}
+        getRowKey={(row) =>
+          row.kind === "folder"
+            ? `folder-${row.folder.id}`
+            : `file-${row.file.id}`
+        }
       />
     </div>
   );
