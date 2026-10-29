@@ -1,4 +1,5 @@
 import { AddFolderButton } from "../../components/AddFolderButton";
+import { AddFileButton } from "../../components/AddFileButton";
 import { DeleteFolderButton } from "../../components/DeleteFolderButton";
 import { FileEntry } from "../../components/FileEntry";
 import { FolderEntry } from "../../components/FolderEntry";
@@ -41,6 +42,7 @@ export function useFoldersViewColumns(): Column<FolderContentRow>[] {
               />
             </div>
             <AddFolderButton folder={row.folder} />
+            <AddFileButton folder={row.folder} />
             <DeleteFolderButton folder={row.folder} />
           </div>
         ) : (
