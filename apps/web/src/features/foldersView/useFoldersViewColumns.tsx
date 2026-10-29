@@ -1,10 +1,12 @@
 import { AddFolderButton } from "../../components/AddFolderButton";
 import { AddFileButton } from "../../components/AddFileButton";
 import { DeleteFolderButton } from "../../components/DeleteFolderButton";
+import { DeleteFileButton } from "../../components/DeleteFileButton";
 import { FileEntry } from "../../components/FileEntry";
 import { FolderEntry } from "../../components/FolderEntry";
 import type { Column } from "../../components/DataGrid/DataGrid";
 import type { FolderContentRow } from "./types";
+import { getFileTypeLabel } from "./fileType";
 
 function formatFileSize(size: number): string {
   if (size === 0) {
@@ -46,14 +48,19 @@ export function useFoldersViewColumns(): Column<FolderContentRow>[] {
             <DeleteFolderButton folder={row.folder} />
           </div>
         ) : (
-          <FileEntry file={row.file} depth={row.depth} />
+          <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+              <FileEntry file={row.file} depth={row.depth} />
+            </div>
+            <DeleteFileButton file={row.file} />
+          </div>
         ),
     },
     {
       id: "type",
       name: "Type",
       cell: (row: FolderContentRow) =>
-        row.kind === "file" ? row.file.contentType : null,
+        row.kind === "file" ? getFileTypeLabel(row.file.contentType) : null,
     },
     {
       id: "size",

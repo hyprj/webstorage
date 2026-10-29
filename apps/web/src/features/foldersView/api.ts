@@ -80,6 +80,17 @@ export async function createFile({
   return response.json() as Promise<FileMetadata>;
 }
 
+export async function deleteFile(id: string): Promise<void> {
+  const response = await fetch(`http://localhost:3001/files/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    throw new Error(errorData?.message || `Server error: ${response.status}`);
+  }
+}
+
 export async function deleteFolder(id: string): Promise<void> {
   const response = await fetch(`http://localhost:3001/folders/${id}`, {
     method: "DELETE",

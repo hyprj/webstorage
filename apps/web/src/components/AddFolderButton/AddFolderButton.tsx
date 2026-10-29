@@ -68,11 +68,7 @@ export function AddFolderButton({ folder }: { folder: Folder }) {
         disabled={addFolder.isPending || !name.trim()}
       >
         {addFolder.isPending ? (
-          <Icon
-            name="loader"
-            className="size-4 animate-spin"
-            aria-hidden="true"
-          />
+          <Icon name="loader" spin className="size-4" aria-hidden="true" />
         ) : (
           <Icon name="plus" className="size-4" aria-hidden="true" />
         )}

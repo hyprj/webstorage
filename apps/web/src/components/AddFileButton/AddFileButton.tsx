@@ -121,7 +121,8 @@ export function AddFileButton({ folder }: { folder: Folder }) {
               {addFile.isPending && (
                 <Icon
                   name="loader"
-                  className="size-4 animate-spin"
+                  spin
+                  className="size-4"
                   aria-hidden="true"
                 />
               )}

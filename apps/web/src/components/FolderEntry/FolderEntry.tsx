@@ -36,11 +36,7 @@ export function FolderEntry({
     >
       <span className="flex size-4 shrink-0 items-center justify-center text-muted">
         {isLoading ? (
-          <Icon
-            name="loader"
-            className="size-4 animate-spin"
-            aria-label="Loading"
-          />
+          <Icon name="loader" spin className="size-4" aria-label="Loading" />
         ) : hasChildren === false ? null : isExpanded ? (
           <Icon name="chevron-down" className="size-4" aria-hidden="true" />
         ) : (

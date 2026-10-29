@@ -6,6 +6,7 @@ export type IconName =
   | "chevron-right"
   | "file"
   | "file-plus"
+  | "files"
   | "loader"
   | "plus"
   | "trash"
@@ -13,9 +14,15 @@ export type IconName =
 
 type IconProps = SVGProps<SVGSVGElement> & {
   name: IconName;
+  spin?: boolean;
 };
 
-export function Icon({ name, ...props }: IconProps) {
+export function Icon({
+  name,
+  spin = false,
+  className = "",
+  ...props
+}: IconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -27,6 +34,7 @@ export function Icon({ name, ...props }: IconProps) {
       strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
+      className={`${spin ? "animate-spin" : ""} ${className}`.trim()}
       {...props}
     >
       {name === "alert" && (
@@ -50,6 +58,15 @@ export function Icon({ name, ...props }: IconProps) {
           <path d="M14 2v6h6" />
           <path d="M12 18v-6" />
           <path d="M9 15h6" />
+        </>
+      )}
+      {name === "files" && (
+        <>
+          <path d="M8 6V4a2 2 0 0 1 2-2h8l4 4v12a2 2 0 0 1-2 2h-2" />
+          <path d="M18 6h4" />
+          <path d="M18 6v4h4" />
+          <path d="M4 6h8l4 4v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" />
+          <path d="M12 6v4h4" />
         </>
       )}
       {name === "loader" && (

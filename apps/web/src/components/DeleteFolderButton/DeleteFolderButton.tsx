@@ -30,11 +30,7 @@ export function DeleteFolderButton({ folder }: { folder: Folder }) {
         aria-label={`Delete ${folder.name}`}
       >
         {deleteFolder.isPending ? (
-          <Icon
-            name="loader"
-            className="size-4 animate-spin"
-            aria-hidden="true"
-          />
+          <Icon name="loader" spin className="size-4" aria-hidden="true" />
         ) : (
           <Icon name="trash" className="size-4" aria-hidden="true" />
         )}

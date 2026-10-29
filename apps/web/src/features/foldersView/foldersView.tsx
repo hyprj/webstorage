@@ -1,4 +1,5 @@
 import { DataGrid } from "../../components/DataGrid";
+import { Icon } from "../../components/Icon";
 import type { FolderContentRow } from "./types";
 import { useFoldersViewColumns } from "./useFoldersViewColumns";
 import { useFoldersViewData } from "./useFoldersViewData";
@@ -16,12 +17,19 @@ export function FoldersView() {
   }
 
   if (isLoading) {
-    return <div>Loading folder contents...</div>;
+    return (
+      <div
+        className="flex min-h-40 items-center justify-center text-muted"
+        role="status"
+        aria-label="Loading folder contents"
+      >
+        <Icon name="loader" spin className="size-6" aria-hidden="true" />
+      </div>
+    );
   }
 
   return (
-    <div>
-      /<div>same but via dataGrid</div>
+    <div className="overflow-hidden rounded-panel border border-border bg-surface">
       <DataGrid<FolderContentRow>
         columns={columns}
         data={rows}
