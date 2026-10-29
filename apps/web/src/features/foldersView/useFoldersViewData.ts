@@ -18,9 +18,9 @@ function appendFolder({
   rows: FolderGridRow[];
   folder: Folder;
   depth: number;
-  expandedIds: Set<string>;
-  childrenQueries: Map<string, UseQueryResult<Folder[], Error>>;
-  setExpandedIds: React.Dispatch<React.SetStateAction<Set<string>>>;
+  expandedIds: Set<string | null>;
+  childrenQueries: Map<string | null, UseQueryResult<Folder[], Error>>;
+  setExpandedIds: React.Dispatch<React.SetStateAction<Set<string | null>>>;
 }) {
   const isExpanded = expandedIds.has(folder.id);
   const childrenQuery = childrenQueries.get(folder.id);
@@ -61,8 +61,18 @@ function appendFolder({
   }
 }
 
+function createRootFolder(): Folder {
+  return {
+    id: null,
+    parentId: null,
+    name: "Root",
+  };
+}
+
 export function useFoldersViewData() {
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
+  const [expandedIds, setExpandedIds] = useState<Set<string | null>>(
+    () => new Set([null]),
+  );
   const rootsQuery = useQuery({
     queryKey: ["folders", "root"],
     queryFn: () => getFolders(),
@@ -72,7 +82,7 @@ export function useFoldersViewData() {
   const childrenResults = useQueries({
     queries: expandedFolderIds.map((parentId) => ({
       queryKey: ["folders", parentId],
-      queryFn: () => getFolders(parentId),
+      queryFn: () => (parentId === null ? getFolders() : getFolders(parentId)),
     })),
   });
 
@@ -84,16 +94,14 @@ export function useFoldersViewData() {
   );
   const rows: FolderGridRow[] = [];
 
-  rootsQuery.data?.forEach((folder) =>
-    appendFolder({
-      rows,
-      folder,
-      depth: 0,
-      expandedIds,
-      childrenQueries,
-      setExpandedIds,
-    }),
-  );
+  appendFolder({
+    rows,
+    folder: createRootFolder(),
+    depth: 0,
+    expandedIds,
+    childrenQueries,
+    setExpandedIds,
+  });
 
   return {
     rows,

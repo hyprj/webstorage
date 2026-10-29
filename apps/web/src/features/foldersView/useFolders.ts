@@ -5,7 +5,7 @@ export function useFolders({
   parentId,
   enabled = true,
 }: {
-  parentId?: string;
+  parentId?: string | null;
   enabled?: boolean;
 }) {
   return useQuery({

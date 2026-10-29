@@ -52,4 +52,17 @@ export class FoldersService {
 
     return newFolder;
   }
+
+  async deleteFolder(id: string) {
+    const [deletedFolder] = await this.db
+      .delete(schema.folders)
+      .where(eq(schema.folders.id, id))
+      .returning({ id: schema.folders.id });
+
+    if (!deletedFolder) {
+      throw new NotFoundException(`No folder with id ${id} exists`);
+    }
+
+    return deletedFolder;
+  }
 }

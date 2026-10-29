@@ -1,11 +1,10 @@
 import { DataGrid } from "../../components/DataGrid";
-import { FolderBranch } from "./FolderBranch";
 import type { FolderGridRow } from "./types";
 import { useFoldersViewColumns } from "./useFoldersViewColumns";
 import { useFoldersViewData } from "./useFoldersViewData";
 
 export function FoldersView() {
-  const { rows, roots, isError, isLoading } = useFoldersViewData();
+  const { rows, isError, isLoading } = useFoldersViewData();
   const columns = useFoldersViewColumns();
 
   if (isError) {
@@ -22,7 +21,7 @@ export function FoldersView() {
       <DataGrid<FolderGridRow>
         columns={columns}
         data={rows}
-        getRowKey={(row) => row.folder.id}
+        getRowKey={(row) => String(row.folder.id)}
       />
     </div>
   );

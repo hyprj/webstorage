@@ -1,5 +1,5 @@
 export type Folder = {
-  id: string;
+  id: string | null;
   parentId: string | null;
   name: string;
 };

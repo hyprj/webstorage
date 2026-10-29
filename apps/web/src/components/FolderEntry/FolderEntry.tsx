@@ -4,13 +4,8 @@ import {
   ChevronRight,
   LoaderCircle,
 } from "lucide-react";
+import type { Folder } from "../../features/foldersView/types";
 import { FolderIcon } from "../Icon/folderIcon";
-
-export type Folder = {
-  id: string;
-  parentId: string | null;
-  name: string;
-};
 
 export function FolderEntry({
   folder,
