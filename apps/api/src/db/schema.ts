@@ -5,6 +5,7 @@ import {
   timestamp,
   foreignKey,
   bigint,
+  boolean,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -32,6 +33,7 @@ export const files = pgTable(
     id: uuid('id').defaultRandom().primaryKey(),
     name: text('name').notNull(),
     folderId: uuid('folder_id'),
+    deleted: boolean('deleted').notNull().default(false),
     contentType: text('content_type').notNull(),
     size: bigint('size', { mode: 'number' }).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),

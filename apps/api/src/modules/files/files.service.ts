@@ -3,7 +3,7 @@ import { DRIZZLE } from '../../db/drizzle.provider';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import * as schema from '../../db/schema';
 import { CreateFileDto } from './dto/create-file.dto';
-import { eq, isNull } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 
 @Injectable()
 export class FilesService {
@@ -16,10 +16,17 @@ export class FilesService {
     const query = this.db.select().from(schema.files);
 
     if (folderId) {
-      return query.where(eq(schema.files.folderId, folderId));
+      return query.where(
+        and(
+          eq(schema.files.folderId, folderId),
+          eq(schema.files.deleted, false),
+        ),
+      );
     }
 
-    return query.where(isNull(schema.files.folderId));
+    return query.where(
+      and(isNull(schema.files.folderId), eq(schema.files.deleted, false)),
+    );
   }
 
   async createFile(fileDto: CreateFileDto) {
@@ -51,9 +58,10 @@ export class FilesService {
 
   async deleteFile(fileId: string) {
     const [deletedFile] = await this.db
-      .delete(schema.files)
+      .update(schema.files)
+      .set({ deleted: true })
       .where(eq(schema.files.id, fileId))
-      .returning({ id: schema.files.id });
+      .returning();
 
     if (!deletedFile) {
       throw new NotFoundException(`File ${fileId} does not exist`);
