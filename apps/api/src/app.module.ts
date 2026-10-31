@@ -4,9 +4,10 @@ import { AppService } from './app.service';
 import { DrizzleModule } from './db/drizzle.module';
 import { FilesModule } from './modules/files/files.module';
 import { FoldersModule } from './modules/folders/folders.module';
+import { TrashModule } from './modules/trash/trash.module';
 
 @Module({
-  imports: [DrizzleModule, FoldersModule, FilesModule],
+  imports: [DrizzleModule, FoldersModule, FilesModule, TrashModule],
   controllers: [AppController],
   providers: [AppService],
 })
