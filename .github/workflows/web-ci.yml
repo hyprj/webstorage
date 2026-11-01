@@ -1,0 +1,40 @@
+name: Web CI
+
+# Run on push and pull request, any branch.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Download the repository to the runner.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Install the pnpm version compatible with the packageManager from the root package.json.
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      # Set up Node.js with caching for pnpm dependencies.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # Install dependencies from the root of the monorepo.
+      # --frozen-lockfile ensures installation is consistent with pnpm-lock.yaml
+      # and will fail the job if the lockfile doesn't match package.json.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Run the "build" script for the web package.
+      # This script already runs tsc -b and then vite build.
+      - name: Type-check and build web
+        run: pnpm --filter web build
