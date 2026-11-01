@@ -5,9 +5,14 @@ import { DRIZZLE } from '../../db/drizzle.provider';
 import * as schema from '../../db/schema';
 import { File, NewFile } from '../../db/schema';
 
+export type CreateFileRecord = Pick<
+  NewFile,
+  'name' | 'contentType' | 'size' | 'folderId'
+>;
+
 export abstract class FilesRepository {
   abstract findAll(folderId?: string): Promise<File[]>;
-  abstract create(file: NewFile): Promise<File | undefined>;
+  abstract create(file: CreateFileRecord): Promise<File | undefined>;
   abstract markDeleted(id: string): Promise<File | undefined>;
 }
 
@@ -35,7 +40,7 @@ export class DrizzleFilesRepository implements FilesRepository {
     );
   }
 
-  async create(file: NewFile): Promise<File | undefined> {
+  async create(file: CreateFileRecord): Promise<File | undefined> {
     const [createdFile] = await this.db
       .insert(schema.files)
       .values(file)
