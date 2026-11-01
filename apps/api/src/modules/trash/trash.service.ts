@@ -1,56 +1,12 @@
-import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
-import { Folder, File } from '../../db/schema';
-import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import * as schema from '../../db/schema';
-import { DRIZZLE } from '../../db/drizzle.provider';
-import { and, eq, isNull } from 'drizzle-orm';
+import { Injectable, NotImplementedException } from '@nestjs/common';
+import { TrashItems, TrashRepository } from './trash.repository';
 
 @Injectable()
 export class TrashService {
-  constructor(
-    @Inject(DRIZZLE)
-    private readonly db: PostgresJsDatabase<typeof schema>,
-  ) {}
+  constructor(private readonly trashRepository: TrashRepository) {}
 
-  async getTrash(
-    folderId: string | null,
-  ): Promise<{ files: File[]; folders: Folder[] }> {
-    // get from files and folders all where deleted = true//
-    // expanding folders on the ui can use standard folders module i believe?
-    // folders deleted flag is not yet implemented;
-
-    if (folderId) {
-      const folders = await this.db
-        .select()
-        .from(schema.folders)
-        .where(
-          and(
-            eq(schema.folders.id, folderId),
-            eq(schema.folders.deleted, true),
-          ),
-        );
-
-      const files = await this.db
-        .select()
-        .from(schema.files)
-        .where(
-          and(eq(schema.files.id, folderId), eq(schema.files.deleted, true)),
-        );
-
-      return { folders, files };
-    }
-
-    const folders = await this.db
-      .select()
-      .from(schema.folders)
-      .where(and(isNull(schema.folders.id), eq(schema.folders.deleted, true)));
-
-    const files = await this.db
-      .select()
-      .from(schema.files)
-      .where(and(isNull(schema.files.id), eq(schema.files.deleted, true)));
-
-    return { folders, files };
+  async getTrash(folderId: string | null = null): Promise<TrashItems> {
+    return this.trashRepository.findDeleted(folderId);
   }
 
   async restoreFile(_fileId: string): Promise<never> {

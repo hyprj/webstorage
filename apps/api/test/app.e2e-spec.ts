@@ -3,6 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module.js';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
@@ -20,7 +21,10 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .get('/')
       .expect(200)
-      .expect('Hello World!');
+      .expect(({ body }) => {
+        expect(body.status).toBe('ok');
+        expect(Array.isArray(body.folders)).toBe(true);
+      });
   });
 
   afterEach(async () => {
