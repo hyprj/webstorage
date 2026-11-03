@@ -33,11 +33,46 @@ export class FilesService {
   }
 
   async deleteFile(fileId: string) {
-    const deletedFile = await this.filesRepository.markDeleted(fileId);
+    const file = await this.filesRepository.findById(fileId);
+
+    if (!file) {
+      throw new NotFoundException(`File ${fileId} does not exist`);
+    }
+
+    const originalLocation = await this.retrieveFolderPath(file.folderId);
+    const deletedFile = await this.filesRepository.markDeleted(
+      fileId,
+      originalLocation,
+    );
     if (!deletedFile) {
       throw new NotFoundException(`File ${fileId} does not exist`);
     }
 
     return deletedFile;
+  }
+
+  private async retrieveFolderPath(
+    folderId: string | null,
+  ): Promise<string | null> {
+    if (folderId === null) {
+      return null;
+    }
+
+    const folderNames: string[] = [];
+    let currentFolder = await this.foldersRepository.findById(folderId);
+
+    while (currentFolder) {
+      folderNames.push(currentFolder.name);
+
+      if (currentFolder.parentId === null) {
+        return folderNames.reverse().join('/');
+      }
+
+      currentFolder = await this.foldersRepository.findById(
+        currentFolder.parentId,
+      );
+    }
+
+    throw new NotFoundException('Unable to retrieve folder path');
   }
 }

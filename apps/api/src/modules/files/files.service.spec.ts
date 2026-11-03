@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 describe('FilesService', () => {
   let filesRepository: {
     findAll: Mock<FilesRepository['findAll']>;
+    findById: Mock<FilesRepository['findById']>;
     create: Mock<FilesRepository['create']>;
     markDeleted: Mock<FilesRepository['markDeleted']>;
   };
@@ -22,6 +23,7 @@ describe('FilesService', () => {
   beforeEach(() => {
     filesRepository = {
       findAll: vi.fn<FilesRepository['findAll']>(),
+      findById: vi.fn<FilesRepository['findById']>(),
       create: vi.fn<FilesRepository['create']>(),
       markDeleted: vi.fn<FilesRepository['markDeleted']>(),
     };

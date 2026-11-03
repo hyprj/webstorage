@@ -34,6 +34,7 @@ export const files = pgTable(
     name: text('name').notNull(),
     folderId: uuid('folder_id'),
     deleted: boolean('deleted').notNull().default(false),
+    originalLocation: text('originalLocation'),
     contentType: text('content_type').notNull(),
     size: bigint('size', { mode: 'number' }).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),

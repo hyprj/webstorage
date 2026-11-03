@@ -12,8 +12,12 @@ export type CreateFileRecord = Pick<
 
 export abstract class FilesRepository {
   abstract findAll(folderId?: string): Promise<File[]>;
+  abstract findById(id: string): Promise<File | undefined>;
   abstract create(file: CreateFileRecord): Promise<File | undefined>;
-  abstract markDeleted(id: string): Promise<File | undefined>;
+  abstract markDeleted(
+    id: string,
+    originalLocation: string | null,
+  ): Promise<File | undefined>;
 }
 
 @Injectable()
@@ -40,6 +44,15 @@ export class DrizzleFilesRepository implements FilesRepository {
     );
   }
 
+  async findById(id: string): Promise<File | undefined> {
+    const [file] = await this.db
+      .select()
+      .from(schema.files)
+      .where(and(eq(schema.files.id, id), eq(schema.files.deleted, false)));
+
+    return file;
+  }
+
   async create(file: CreateFileRecord): Promise<File | undefined> {
     const [createdFile] = await this.db
       .insert(schema.files)
@@ -49,10 +62,13 @@ export class DrizzleFilesRepository implements FilesRepository {
     return createdFile;
   }
 
-  async markDeleted(id: string): Promise<File | undefined> {
+  async markDeleted(
+    id: string,
+    originalLocation: string | null,
+  ): Promise<File | undefined> {
     const [deletedFile] = await this.db
       .update(schema.files)
-      .set({ deleted: true })
+      .set({ deleted: true, originalLocation })
       .where(eq(schema.files.id, id))
       .returning();
 

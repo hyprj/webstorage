@@ -36,10 +36,10 @@ export class TrashController {
 
   @Delete('files/:fileId')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteFile(
+  async permanentlyDeleteFile(
     @Param('fileId', new ParseUUIDPipe({ version: '4' })) fileId: string,
   ): Promise<void> {
-    await this.trashService.deleteFile(fileId);
+    await this.trashService.permanentlyDeleteFile(fileId);
   }
 
   @Delete('folders/:folderId')

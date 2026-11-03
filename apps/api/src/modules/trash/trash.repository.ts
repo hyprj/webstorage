@@ -10,9 +10,15 @@ export type TrashItems = { files: File[]; folders: Folder[] };
 export abstract class TrashRepository {
   abstract findDeleted(folderId: string | null): Promise<TrashItems>;
   abstract findNonDeletedFile(fileId: string): Promise<File | undefined>;
-  abstract deleteFile(fileId: string): Promise<File | undefined>;
+  abstract deleteFile(
+    fileId: string,
+    originalLocation: string | null,
+  ): Promise<File | undefined>;
   abstract findDeletedFile(fileId: string): Promise<File | undefined>;
-  abstract restoreFile(fileId: string): Promise<File | undefined>;
+  abstract restoreFile(
+    fileId: string,
+    folderId: string | null,
+  ): Promise<File | undefined>;
 }
 
 @Injectable()
@@ -47,10 +53,13 @@ export class DrizzleTrashRepository implements TrashRepository {
     return file;
   }
 
-  async deleteFile(fileId: string): Promise<File | undefined> {
+  async deleteFile(
+    fileId: string,
+    originalLocation: string | null,
+  ): Promise<File | undefined> {
     const [deletedFile] = await this.db
       .update(schema.files)
-      .set({ deleted: true })
+      .set({ deleted: true, originalLocation })
       .where(eq(schema.files.id, fileId))
       .returning();
 
@@ -66,11 +75,14 @@ export class DrizzleTrashRepository implements TrashRepository {
     return file;
   }
 
-  async restoreFile(fileId: string): Promise<File | undefined> {
+  async restoreFile(
+    fileId: string,
+    folderId: string | null,
+  ): Promise<File | undefined> {
     const [restoredFile] = await this.db
       .update(schema.files)
-      .set({ deleted: false })
-      .where(eq(schema.files.id, fileId))
+      .set({ deleted: false, folderId })
+      .where(and(eq(schema.files.id, fileId), eq(schema.files.deleted, true)))
       .returning();
 
     return restoredFile;
