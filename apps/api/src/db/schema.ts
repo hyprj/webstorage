@@ -15,6 +15,8 @@ export const folders = pgTable(
     id: uuid('id').defaultRandom().primaryKey(),
     name: text('name').notNull(),
     parentId: uuid('parent_id'),
+    deleted: boolean('deleted').notNull().default(false),
+    originalLocation: text('original_location'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },

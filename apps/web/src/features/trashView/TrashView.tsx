@@ -74,6 +74,11 @@ export function TrashView() {
       cell: (item) => (item.type === "folder" ? "Folder" : "File"),
     },
     { id: "size", name: "Size", cell: (item) => formatSize(item.size) },
+    {
+      id: "originalLocation",
+      name: "Original location",
+      cell: (item) => item.originalLocation ?? "Root",
+    },
     { id: "deleted", name: "Deleted", cell: () => "In trash" },
     {
       id: "actions",

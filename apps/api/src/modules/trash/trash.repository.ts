@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { DRIZZLE } from '../../db/drizzle.provider';
 import { File, Folder } from '../../db/schema';
@@ -19,6 +19,11 @@ export abstract class TrashRepository {
     fileId: string,
     folderId: string | null,
   ): Promise<File | undefined>;
+  abstract findDeletedFolder(folderId: string): Promise<Folder | undefined>;
+  abstract restoreFolder(
+    folderId: string,
+    parentId: string | null,
+  ): Promise<Folder | undefined>;
 }
 
 @Injectable()
@@ -29,19 +34,23 @@ export class DrizzleTrashRepository implements TrashRepository {
   ) {}
 
   async findDeleted(folderId: string | null): Promise<TrashItems> {
+    const deletedCondition =
+      folderId === null
+        ? eq(schema.files.deleted, true)
+        : and(
+            eq(schema.files.folderId, folderId),
+            eq(schema.files.deleted, true),
+          );
     const files = await this.db
       .select()
       .from(schema.files)
-      .where(
-        and(
-          folderId
-            ? eq(schema.files.folderId, folderId)
-            : isNull(schema.files.folderId),
-          eq(schema.files.deleted, true),
-        ),
-      );
+      .where(deletedCondition);
+    const folders = await this.db
+      .select()
+      .from(schema.folders)
+      .where(eq(schema.folders.deleted, true));
 
-    return { files, folders: [] };
+    return { files, folders };
   }
 
   async findNonDeletedFile(fileId: string): Promise<File | undefined> {
@@ -86,5 +95,27 @@ export class DrizzleTrashRepository implements TrashRepository {
       .returning();
 
     return restoredFile;
+  }
+
+  async findDeletedFolder(folderId: string): Promise<Folder | undefined> {
+    const [folder] = await this.db
+      .select()
+      .from(schema.folders)
+      .where(and(eq(schema.folders.id, folderId), eq(schema.folders.deleted, true)));
+
+    return folder;
+  }
+
+  async restoreFolder(
+    folderId: string,
+    parentId: string | null,
+  ): Promise<Folder | undefined> {
+    const [restoredFolder] = await this.db
+      .update(schema.folders)
+      .set({ deleted: false, parentId })
+      .where(and(eq(schema.folders.id, folderId), eq(schema.folders.deleted, true)))
+      .returning();
+
+    return restoredFolder;
   }
 }

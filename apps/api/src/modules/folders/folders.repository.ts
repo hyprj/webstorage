@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq, isNull } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { DRIZZLE } from '../../db/drizzle.provider';
 import * as schema from '../../db/schema';
@@ -11,7 +11,10 @@ export abstract class FoldersRepository {
   abstract create(
     folder: Pick<NewFolder, 'name' | 'parentId'>,
   ): Promise<Folder | undefined>;
-  abstract deleteById(id: string): Promise<{ id: string } | undefined>;
+  abstract markDeleted(
+    id: string,
+    originalLocation: string | null,
+  ): Promise<Folder | undefined>;
 }
 
 @Injectable()
@@ -25,10 +28,17 @@ export class DrizzleFoldersRepository implements FoldersRepository {
     const query = this.db.select().from(schema.folders);
 
     if (parentId) {
-      return query.where(eq(schema.folders.parentId, parentId));
+      return query.where(
+        and(
+          eq(schema.folders.parentId, parentId),
+          eq(schema.folders.deleted, false),
+        ),
+      );
     }
 
-    return query.where(isNull(schema.folders.parentId));
+    return query.where(
+      and(isNull(schema.folders.parentId), eq(schema.folders.deleted, false)),
+    );
   }
 
   async findById(id: string): Promise<Folder | undefined> {
@@ -51,11 +61,15 @@ export class DrizzleFoldersRepository implements FoldersRepository {
     return createdFolder;
   }
 
-  async deleteById(id: string): Promise<{ id: string } | undefined> {
+  async markDeleted(
+    id: string,
+    originalLocation: string | null,
+  ): Promise<Folder | undefined> {
     const [deletedFolder] = await this.db
-      .delete(schema.folders)
-      .where(eq(schema.folders.id, id))
-      .returning({ id: schema.folders.id });
+      .update(schema.folders)
+      .set({ deleted: true, originalLocation })
+      .where(and(eq(schema.folders.id, id), eq(schema.folders.deleted, false)))
+      .returning();
 
     return deletedFolder;
   }

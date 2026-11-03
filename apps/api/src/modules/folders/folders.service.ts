@@ -34,11 +34,43 @@ export class FoldersService {
   }
 
   async deleteFolder(id: string) {
-    const deletedFolder = await this.foldersRepository.deleteById(id);
+    const folder = await this.foldersRepository.findById(id);
+    if (!folder || folder.deleted) {
+      throw new NotFoundException(`No folder with id ${id} exists`);
+    }
+
+    const originalLocation = await this.retrieveFolderPath(folder.parentId);
+    const deletedFolder = await this.foldersRepository.markDeleted(
+      id,
+      originalLocation,
+    );
     if (!deletedFolder) {
       throw new NotFoundException(`No folder with id ${id} exists`);
     }
 
     return deletedFolder;
+  }
+
+  private async retrieveFolderPath(
+    folderId: string | null,
+  ): Promise<string | null> {
+    if (folderId === null) {
+      return null;
+    }
+
+    const names: string[] = [];
+    let currentFolder = await this.foldersRepository.findById(folderId);
+
+    while (currentFolder) {
+      names.push(currentFolder.name);
+      if (currentFolder.parentId === null) {
+        return names.reverse().join('/');
+      }
+      currentFolder = await this.foldersRepository.findById(
+        currentFolder.parentId,
+      );
+    }
+
+    throw new NotFoundException('Unable to retrieve folder path');
   }
 }

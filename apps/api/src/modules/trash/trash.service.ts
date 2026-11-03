@@ -43,7 +43,25 @@ export class TrashService {
     }
   }
 
-  async restoreFolder(_folderId: string): Promise<void> {}
+  async restoreFolder(folderId: string): Promise<void> {
+    const folder = await this.trashRepository.findDeletedFolder(folderId);
+
+    if (!folder) {
+      throw new NotFoundException(`Folder ${folderId} not found in trash`);
+    }
+
+    const parentId = folder.originalLocation
+      ? await this.ensureFolderPath(folder.originalLocation)
+      : null;
+    const restoredFolder = await this.trashRepository.restoreFolder(
+      folderId,
+      parentId,
+    );
+
+    if (!restoredFolder) {
+      throw new NotFoundException(`Folder ${folderId} could not be restored`);
+    }
+  }
 
   async permanentlyDeleteFile(_fileId: string): Promise<never> {
     // TODO: permanently remove the file from storage and the database.

@@ -9,7 +9,7 @@ describe('FoldersService', () => {
     findChildren: Mock<FoldersRepository['findChildren']>;
     findById: Mock<FoldersRepository['findById']>;
     create: Mock<FoldersRepository['create']>;
-    deleteById: Mock<FoldersRepository['deleteById']>;
+    markDeleted: Mock<FoldersRepository['markDeleted']>;
   };
   let service: FoldersService;
 
@@ -18,7 +18,7 @@ describe('FoldersService', () => {
       findChildren: vi.fn<FoldersRepository['findChildren']>(),
       findById: vi.fn<FoldersRepository['findById']>(),
       create: vi.fn<FoldersRepository['create']>(),
-      deleteById: vi.fn<FoldersRepository['deleteById']>(),
+      markDeleted: vi.fn<FoldersRepository['markDeleted']>(),
     };
     service = new FoldersService(foldersRepository);
   });
@@ -48,7 +48,7 @@ describe('FoldersService', () => {
   });
 
   it('throws when the folder to delete does not exist', async () => {
-    foldersRepository.deleteById.mockResolvedValue(undefined);
+    foldersRepository.findById.mockResolvedValue(undefined);
 
     await expect(service.deleteFolder('missing-folder')).rejects.toThrow(
       NotFoundException,
