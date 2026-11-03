@@ -9,6 +9,10 @@ export type TrashItems = { files: File[]; folders: Folder[] };
 
 export abstract class TrashRepository {
   abstract findDeleted(folderId: string | null): Promise<TrashItems>;
+  abstract findNonDeletedFile(fileId: string): Promise<File | undefined>;
+  abstract deleteFile(fileId: string): Promise<File | undefined>;
+  abstract findDeletedFile(fileId: string): Promise<File | undefined>;
+  abstract restoreFile(fileId: string): Promise<File | undefined>;
 }
 
 @Injectable()
@@ -32,5 +36,43 @@ export class DrizzleTrashRepository implements TrashRepository {
       );
 
     return { files, folders: [] };
+  }
+
+  async findNonDeletedFile(fileId: string): Promise<File | undefined> {
+    const [file] = await this.db
+      .select()
+      .from(schema.files)
+      .where(and(eq(schema.files.id, fileId), eq(schema.files.deleted, false)));
+
+    return file;
+  }
+
+  async deleteFile(fileId: string): Promise<File | undefined> {
+    const [deletedFile] = await this.db
+      .update(schema.files)
+      .set({ deleted: true })
+      .where(eq(schema.files.id, fileId))
+      .returning();
+
+    return deletedFile;
+  }
+
+  async findDeletedFile(fileId: string): Promise<File | undefined> {
+    const [file] = await this.db
+      .select()
+      .from(schema.files)
+      .where(and(eq(schema.files.id, fileId), eq(schema.files.deleted, true)));
+
+    return file;
+  }
+
+  async restoreFile(fileId: string): Promise<File | undefined> {
+    const [restoredFile] = await this.db
+      .update(schema.files)
+      .set({ deleted: false })
+      .where(eq(schema.files.id, fileId))
+      .returning();
+
+    return restoredFile;
   }
 }
