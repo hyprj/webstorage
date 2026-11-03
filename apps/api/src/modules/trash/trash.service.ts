@@ -26,7 +26,7 @@ export class TrashService {
     const file = await this.trashRepository.findDeletedFile(fileId);
 
     if (!file) {
-      throw new Error('Deleted file not found');
+      throw new NotFoundException(`File ${fileId} not found in trash`);
     }
 
     const folderId = file.originalLocation

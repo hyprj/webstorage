@@ -54,4 +54,35 @@ describe('FoldersService', () => {
       NotFoundException,
     );
   });
+
+  it('soft-deletes a root folder without an original location', async () => {
+    const folder = { id: 'folder-id', parentId: null } as Folder;
+    foldersRepository.findById.mockResolvedValue(folder);
+    foldersRepository.markDeleted.mockResolvedValue(folder);
+
+    await expect(service.deleteFolder('folder-id')).resolves.toBe(folder);
+    expect(foldersRepository.markDeleted).toHaveBeenCalledWith(
+      'folder-id',
+      null,
+    );
+  });
+
+  it('stores the parent path when deleting a nested folder', async () => {
+    const folder = { id: 'child-id', parentId: 'root-id' } as Folder;
+    foldersRepository.findById
+      .mockResolvedValueOnce(folder)
+      .mockResolvedValueOnce({
+        id: 'root-id',
+        name: 'Projects',
+        parentId: null,
+      } as Folder);
+    foldersRepository.markDeleted.mockResolvedValue(folder);
+
+    await service.deleteFolder('child-id');
+
+    expect(foldersRepository.markDeleted).toHaveBeenCalledWith(
+      'child-id',
+      'Projects',
+    );
+  });
 });

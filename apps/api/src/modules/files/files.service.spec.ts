@@ -16,7 +16,6 @@ describe('FilesService', () => {
     findChildren: Mock<FoldersRepository['findChildren']>;
     findById: Mock<FoldersRepository['findById']>;
     create: Mock<FoldersRepository['create']>;
-    deleteById: Mock<FoldersRepository['deleteById']>;
   };
   let service: FilesService;
 
@@ -31,7 +30,6 @@ describe('FilesService', () => {
       findChildren: vi.fn<FoldersRepository['findChildren']>(),
       findById: vi.fn<FoldersRepository['findById']>(),
       create: vi.fn<FoldersRepository['create']>(),
-      deleteById: vi.fn<FoldersRepository['deleteById']>(),
     };
     service = new FilesService(filesRepository, foldersRepository);
   });
@@ -80,10 +78,43 @@ describe('FilesService', () => {
   });
 
   it('throws when the file to delete does not exist', async () => {
-    filesRepository.markDeleted.mockResolvedValue(undefined);
+    filesRepository.findById.mockResolvedValue(undefined);
 
     await expect(service.deleteFile('missing-file')).rejects.toThrow(
       NotFoundException,
+    );
+  });
+
+  it('soft-deletes a root file without an original location', async () => {
+    const file = { id: 'file-id', folderId: null } as File;
+    filesRepository.findById.mockResolvedValue(file);
+    filesRepository.markDeleted.mockResolvedValue(file);
+
+    await expect(service.deleteFile('file-id')).resolves.toBe(file);
+    expect(filesRepository.markDeleted).toHaveBeenCalledWith('file-id', null);
+  });
+
+  it('stores the folder path when deleting a nested file', async () => {
+    const file = { id: 'file-id', folderId: 'child-id' } as File;
+    filesRepository.findById.mockResolvedValue(file);
+    foldersRepository.findById
+      .mockResolvedValueOnce({
+        id: 'child-id',
+        name: 'Reports',
+        parentId: 'root-id',
+      } as Folder)
+      .mockResolvedValueOnce({
+        id: 'root-id',
+        name: 'Projects',
+        parentId: null,
+      } as Folder);
+    filesRepository.markDeleted.mockResolvedValue(file);
+
+    await service.deleteFile('file-id');
+
+    expect(filesRepository.markDeleted).toHaveBeenCalledWith(
+      'file-id',
+      'Projects/Reports',
     );
   });
 });
