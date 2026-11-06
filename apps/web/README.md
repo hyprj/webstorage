@@ -25,6 +25,13 @@ to the configured API at `http://localhost:3001`, as before.
 The mode-specific environment files are [`.env.mock`](./.env.mock) and
 [`.env.proxy`](./.env.proxy). Production builds do not enable MSW.
 
+The app uses client-side routing:
+
+- `/files` — file and folder view
+- `/trash` — trash view
+
+Opening `/` redirects to `/files`.
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
