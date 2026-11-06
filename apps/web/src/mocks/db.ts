@@ -1,5 +1,6 @@
 import type { FileMetadata, Folder } from "../features/foldersView/types";
 import type { TrashResponse } from "../features/trashView/api";
+import type { DefaultDataRetention } from "../features/dataRetention/api";
 
 type MockFolder = Omit<Folder, "id"> & { id: string; deleted: boolean };
 type MockFile = FileMetadata & { deleted: boolean };
@@ -30,6 +31,19 @@ const files: MockFile[] = [
     deleted: false,
   },
 ];
+
+let defaultDataRetention: DefaultDataRetention = { time: "1h" };
+
+export function getDefaultDataRetention(): DefaultDataRetention {
+  return defaultDataRetention;
+}
+
+export function setDefaultDataRetention(
+  value: DefaultDataRetention,
+): DefaultDataRetention {
+  defaultDataRetention = value;
+  return defaultDataRetention;
+}
 
 export function listFolders(parentId: string | null): Folder[] {
   return folders

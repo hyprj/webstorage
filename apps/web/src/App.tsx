@@ -2,7 +2,7 @@ import { AppHeader } from "./components/AppHeader";
 import { Sidebar } from "./components/Sidebar";
 import { FoldersView } from "./features/foldersView";
 import { TrashView } from "./features/trashView/TrashView";
-import { DataRetentionView } from "./features/dataRetentionView";
+import { DataRetentionView } from "./features/dataRetention";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 function App() {

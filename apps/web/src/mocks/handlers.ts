@@ -2,6 +2,7 @@ import { http, HttpResponse } from "msw";
 import {
   createFile,
   createFolder,
+  getDefaultDataRetention,
   hasActiveFolder,
   listFiles,
   listFolders,
@@ -12,7 +13,12 @@ import {
   permanentlyDeleteFolder,
   restoreFile,
   restoreFolder,
+  setDefaultDataRetention,
 } from "./db";
+import {
+  retentionTimes,
+  type RetentionTime,
+} from "../features/dataRetention/api";
 
 const apiUrl = "http://localhost:3001";
 
@@ -75,6 +81,30 @@ export const handlers = [
   }),
 
   http.get(`${apiUrl}/trash`, () => HttpResponse.json(listTrash())),
+
+  http.get(`${apiUrl}/data-retention/default-data-retention`, () =>
+    HttpResponse.json(getDefaultDataRetention()),
+  ),
+
+  http.post(
+    `${apiUrl}/data-retention/default-data-retention`,
+    async ({ request }) => {
+      const body = (await request.json()) as { time?: unknown };
+      if (
+        typeof body.time !== "string" ||
+        !retentionTimes.includes(body.time as RetentionTime)
+      ) {
+        return HttpResponse.json(
+          { message: "Invalid retention time" },
+          { status: 400 },
+        );
+      }
+
+      return HttpResponse.json(
+        setDefaultDataRetention({ time: body.time as RetentionTime }),
+      );
+    },
+  ),
 
   http.patch(`${apiUrl}/trash/files/:id/restore`, ({ params }) => {
     const id = String(params.id);
