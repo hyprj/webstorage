@@ -1,5 +1,5 @@
 import type { FileMetadata, Folder } from "../features/foldersView/types";
-import type { TrashItem } from "../features/trashView/api";
+import type { TrashResponse } from "../features/trashView/api";
 
 type MockFolder = Omit<Folder, "id"> & { id: string; deleted: boolean };
 type MockFile = FileMetadata & { deleted: boolean };
@@ -117,25 +117,24 @@ export function moveFolderToTrash(id: string): boolean {
   return true;
 }
 
-export function listTrash(): TrashItem[] {
-  return [
-    ...folders
-      .filter((folder) => folder.deleted)
-      .map((folder) => ({
-        id: folder.id,
-        name: folder.name,
-        type: "folder" as const,
-        size: null,
-      })),
-    ...files
+export function listTrash(): TrashResponse {
+  return {
+    files: files
       .filter((file) => file.deleted)
       .map((file) => ({
         id: file.id,
         name: file.name,
-        type: "file" as const,
         size: file.size,
+        originalLocation: null,
       })),
-  ];
+    folders: folders
+      .filter((folder) => folder.deleted)
+      .map((folder) => ({
+        id: folder.id,
+        name: folder.name,
+        originalLocation: null,
+      })),
+  };
 }
 
 export function restoreFile(id: string): boolean {

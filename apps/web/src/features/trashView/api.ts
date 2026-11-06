@@ -6,7 +6,7 @@ export type TrashItem = {
   originalLocation: string | null;
 };
 
-type TrashResponse = {
+export type TrashResponse = {
   files: Array<{
     id: string;
     name: string;
@@ -40,14 +40,14 @@ export async function getTrash(): Promise<TrashItem[]> {
       name: file.name,
       type: "file" as const,
       size: file.size,
-      originalLocation: file.originalLocation,
+      originalLocation: file.originalLocation ?? null,
     })),
     ...folders.map((folder) => ({
       id: folder.id,
       name: folder.name,
       type: "folder" as const,
       size: null,
-      originalLocation: folder.originalLocation,
+      originalLocation: folder.originalLocation ?? null,
     })),
   ];
 }
