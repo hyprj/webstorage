@@ -5,10 +5,15 @@ export function Sidebar() {
   const items: {
     path: string;
     label: string;
-    icon: "files" | "trash";
+    icon: "files" | "shield" | "trash";
   }[] = [
-    { path: "/files", label: "Files", icon: "files" },
+    { path: "/", label: "Files", icon: "files" },
     { path: "/trash", label: "Trash", icon: "trash" },
+    {
+      path: "/data-retention",
+      label: "Data retention",
+      icon: "shield",
+    },
   ];
 
   return (

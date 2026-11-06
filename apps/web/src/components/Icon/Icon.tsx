@@ -9,6 +9,7 @@ export type IconName =
   | "files"
   | "loader"
   | "plus"
+  | "shield"
   | "trash"
   | "x";
 
@@ -86,6 +87,9 @@ export function Icon({
           <path d="M12 5v14" />
           <path d="M5 12h14" />
         </>
+      )}
+      {name === "shield" && (
+        <path d="M12 3 5 6v5c0 4.5 2.9 8.5 7 10 4.1-1.5 7-5.5 7-10V6l-7-3Z" />
       )}
       {name === "trash" && (
         <>

@@ -27,10 +27,11 @@ The mode-specific environment files are [`.env.mock`](./.env.mock) and
 
 The app uses client-side routing:
 
-- `/files` — file and folder view
+- `/` — file and folder view
 - `/trash` — trash view
+- `/data-retention` — data retention settings
 
-Opening `/` redirects to `/files`.
+The legacy `/files` path redirects to `/`.
 
 Currently, two official plugins are available:
 
