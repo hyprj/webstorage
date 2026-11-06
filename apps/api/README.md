@@ -57,6 +57,11 @@ $ pnpm run test:e2e
 $ pnpm run test:cov
 ```
 
+Services depend on repository abstractions; Drizzle-backed repositories contain
+the database queries. Service unit tests mock those repositories, while
+repository integration tests should use a dedicated test PostgreSQL database.
+HTTP end-to-end tests exercise the Nest application through Supertest.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

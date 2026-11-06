@@ -3,6 +3,21 @@ export type TrashItem = {
   name: string;
   type: "file" | "folder";
   size: number | null;
+  originalLocation: string | null;
+};
+
+type TrashResponse = {
+  files: Array<{
+    id: string;
+    name: string;
+    size: number;
+    originalLocation: string | null;
+  }>;
+  folders: Array<{
+    id: string;
+    name: string;
+    originalLocation: string | null;
+  }>;
 };
 
 async function ensureSuccess(response: Response) {
@@ -17,7 +32,24 @@ async function ensureSuccess(response: Response) {
 export async function getTrash(): Promise<TrashItem[]> {
   const response = await fetch("http://localhost:3001/trash");
   await ensureSuccess(response);
-  return response.json() as Promise<TrashItem[]>;
+  const { files, folders } = (await response.json()) as TrashResponse;
+
+  return [
+    ...files.map((file) => ({
+      id: file.id,
+      name: file.name,
+      type: "file" as const,
+      size: file.size,
+      originalLocation: file.originalLocation,
+    })),
+    ...folders.map((folder) => ({
+      id: folder.id,
+      name: folder.name,
+      type: "folder" as const,
+      size: null,
+      originalLocation: folder.originalLocation,
+    })),
+  ];
 }
 
 export async function restoreFile(id: string): Promise<void> {

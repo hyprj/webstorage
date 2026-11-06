@@ -1,70 +1,70 @@
-import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
-import { Folder, File } from '../../db/schema';
-import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import * as schema from '../../db/schema';
-import { DRIZZLE } from '../../db/drizzle.provider';
-import { and, eq, isNull } from 'drizzle-orm';
+import {
+  Injectable,
+  NotFoundException,
+  NotImplementedException,
+} from '@nestjs/common';
+import { FoldersRepository } from '../folders/folders.repository';
+import { TrashItems, TrashRepository } from './trash.repository';
 
 @Injectable()
 export class TrashService {
   constructor(
-    @Inject(DRIZZLE)
-    private readonly db: PostgresJsDatabase<typeof schema>,
+    private readonly trashRepository: TrashRepository,
+    private readonly foldersRepository: FoldersRepository,
   ) {}
 
-  async getTrash(
-    folderId: string | null,
-  ): Promise<{ files: File[]; folders: Folder[] }> {
-    // get from files and folders all where deleted = true//
-    // expanding folders on the ui can use standard folders module i believe?
-    // folders deleted flag is not yet implemented;
+  async getTrash(folderId: string | null = null): Promise<TrashItems> {
+    return this.trashRepository.findDeleted(folderId);
+  }
 
-    if (folderId) {
-      const folders = await this.db
-        .select()
-        .from(schema.folders)
-        .where(
-          and(
-            eq(schema.folders.id, folderId),
-            eq(schema.folders.deleted, true),
-          ),
-        );
+  async markDeleted(_folderId: string): Promise<never> {
+    // update 'deleted' column
+    throw new NotImplementedException();
+  }
 
-      const files = await this.db
-        .select()
-        .from(schema.files)
-        .where(
-          and(eq(schema.files.id, folderId), eq(schema.files.deleted, true)),
-        );
+  async restoreFile(fileId: string): Promise<void> {
+    const file = await this.trashRepository.findDeletedFile(fileId);
 
-      return { folders, files };
+    if (!file) {
+      throw new NotFoundException(`File ${fileId} not found in trash`);
     }
 
-    const folders = await this.db
-      .select()
-      .from(schema.folders)
-      .where(and(isNull(schema.folders.id), eq(schema.folders.deleted, true)));
+    const folderId = file.originalLocation
+      ? await this.ensureFolderPath(file.originalLocation)
+      : file.folderId;
 
-    const files = await this.db
-      .select()
-      .from(schema.files)
-      .where(and(isNull(schema.files.id), eq(schema.files.deleted, true)));
+    const restoredFile = await this.trashRepository.restoreFile(
+      fileId,
+      folderId,
+    );
 
-    return { folders, files };
+    if (!restoredFile) {
+      throw new NotFoundException(`File ${fileId} could not be restored`);
+    }
   }
 
-  async restoreFile(_fileId: string): Promise<never> {
-    // update 'deleted' column
-    throw new NotImplementedException();
-  }
+  async restoreFolder(folderId: string): Promise<void> {
+    const folder = await this.trashRepository.findDeletedFolder(folderId);
 
-  async restoreFolder(_folderId: string): Promise<never> {
-    // update 'deleted' column
-    throw new NotImplementedException();
+    if (!folder) {
+      throw new NotFoundException(`Folder ${folderId} not found in trash`);
+    }
+
+    const parentId = folder.originalLocation
+      ? await this.ensureFolderPath(folder.originalLocation)
+      : null;
+    const restoredFolder = await this.trashRepository.restoreFolder(
+      folderId,
+      parentId,
+    );
+
+    if (!restoredFolder) {
+      throw new NotFoundException(`Folder ${folderId} could not be restored`);
+    }
   }
 
   async permanentlyDeleteFile(_fileId: string): Promise<never> {
-    // this will be implemented as 'purge file' later on
+    // TODO: permanently remove the file from storage and the database.
     throw new NotImplementedException();
   }
 
@@ -72,4 +72,38 @@ export class TrashService {
     // this will be implemented as 'purge folder' later on
     throw new NotImplementedException();
   }
+
+  private async ensureFolderPath(folderPath: string): Promise<string | null> {
+    const folderNames = folderPath
+      .split('/')
+      .map((name) => name.trim())
+      .filter(Boolean);
+    let parentId: string | null = null;
+
+    for (const folderName of folderNames) {
+      const children = await this.foldersRepository.findChildren(parentId);
+      const existingFolder = children.find(
+        (folder) => folder.name === folderName,
+      );
+
+      if (existingFolder) {
+        parentId = existingFolder.id;
+        continue;
+      }
+
+      const createdFolder = await this.foldersRepository.create({
+        name: folderName,
+        parentId,
+      });
+
+      if (!createdFolder) {
+        throw new Error(`Unable to recreate folder "${folderName}"`);
+      }
+
+      parentId = createdFolder.id;
+    }
+
+    return parentId;
+  }
+
 }

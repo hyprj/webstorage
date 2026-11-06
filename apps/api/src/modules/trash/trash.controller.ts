@@ -2,6 +2,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -18,10 +20,11 @@ export class TrashController {
   }
 
   @Patch('files/:fileId/restore')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async restoreFile(
     @Param('fileId', new ParseUUIDPipe({ version: '4' })) fileId: string,
-  ) {
-    return this.trashService.restoreFile(fileId);
+  ): Promise<void> {
+    await this.trashService.restoreFile(fileId);
   }
 
   @Patch('folders/:folderId/restore')
@@ -32,10 +35,11 @@ export class TrashController {
   }
 
   @Delete('files/:fileId')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async permanentlyDeleteFile(
     @Param('fileId', new ParseUUIDPipe({ version: '4' })) fileId: string,
-  ) {
-    return this.trashService.permanentlyDeleteFile(fileId);
+  ): Promise<void> {
+    await this.trashService.permanentlyDeleteFile(fileId);
   }
 
   @Delete('folders/:folderId')

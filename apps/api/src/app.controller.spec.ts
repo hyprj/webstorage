@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('AppController', () => {
   let appController: AppController;
@@ -8,15 +9,20 @@ describe('AppController', () => {
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [AppService],
+      providers: [
+        {
+          provide: AppService,
+          useValue: { getHello: vi.fn().mockResolvedValue({ status: 'ok' }) },
+        },
+      ],
     }).compile();
 
     appController = app.get<AppController>(AppController);
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('returns the service response', async () => {
+      await expect(appController.getHello()).resolves.toEqual({ status: 'ok' });
     });
   });
 });

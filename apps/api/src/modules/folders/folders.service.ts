@@ -1,68 +1,76 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { DRIZZLE } from '../../db/drizzle.provider';
-import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import * as schema from '../../db/schema';
-import { eq, isNull } from 'drizzle-orm';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFolderDto } from './dto/create-folder.dto';
+import { FoldersRepository } from './folders.repository';
 
 @Injectable()
 export class FoldersService {
-  constructor(
-    @Inject(DRIZZLE)
-    private readonly db: PostgresJsDatabase<typeof schema>,
-  ) {}
+  constructor(private readonly foldersRepository: FoldersRepository) {}
 
   async getFolders(parentId?: string | null) {
-    const query = this.db.select().from(schema.folders);
-
-    if (parentId) {
-      return query.where(eq(schema.folders.parentId, parentId));
-    }
-
-    return query.where(isNull(schema.folders.parentId));
+    return this.foldersRepository.findChildren(parentId);
   }
 
   async getFolderById(id: string) {
-    const [folder] = await this.db
-      .select()
-      .from(schema.folders)
-      .where(eq(schema.folders.id, id));
-
+    const folder = await this.foldersRepository.findById(id);
     if (!folder) {
       throw new NotFoundException(`No folder with id ${id} exist`);
     }
+
+    return folder;
   }
 
   async createFolder(dto: CreateFolderDto) {
     if (dto.parentId) {
-      const [parent] = await this.db
-        .select({ id: schema.folders.id })
-        .from(schema.folders)
-        .where(eq(schema.folders.id, dto.parentId));
-
+      const parent = await this.foldersRepository.findById(dto.parentId);
       if (!parent) {
         throw new NotFoundException(`${dto.parentId} does not exist`);
       }
     }
-    // array of created rows
-    const [newFolder] = await this.db
-      .insert(schema.folders)
-      .values({ name: dto.name, parentId: dto.parentId })
-      .returning();
 
-    return newFolder;
+    return this.foldersRepository.create({
+      name: dto.name,
+      parentId: dto.parentId,
+    });
   }
 
   async deleteFolder(id: string) {
-    const [deletedFolder] = await this.db
-      .delete(schema.folders)
-      .where(eq(schema.folders.id, id))
-      .returning({ id: schema.folders.id });
+    const folder = await this.foldersRepository.findById(id);
+    if (!folder || folder.deleted) {
+      throw new NotFoundException(`No folder with id ${id} exists`);
+    }
 
+    const originalLocation = await this.retrieveFolderPath(folder.parentId);
+    const deletedFolder = await this.foldersRepository.markDeleted(
+      id,
+      originalLocation,
+    );
     if (!deletedFolder) {
       throw new NotFoundException(`No folder with id ${id} exists`);
     }
 
     return deletedFolder;
+  }
+
+  private async retrieveFolderPath(
+    folderId: string | null,
+  ): Promise<string | null> {
+    if (folderId === null) {
+      return null;
+    }
+
+    const names: string[] = [];
+    let currentFolder = await this.foldersRepository.findById(folderId);
+
+    while (currentFolder) {
+      names.push(currentFolder.name);
+      if (currentFolder.parentId === null) {
+        return names.reverse().join('/');
+      }
+      currentFolder = await this.foldersRepository.findById(
+        currentFolder.parentId,
+      );
+    }
+
+    throw new NotFoundException('Unable to retrieve folder path');
   }
 }
