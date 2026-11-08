@@ -69,15 +69,18 @@ export async function restoreFolder(id: string): Promise<void> {
 }
 
 export async function permanentlyDeleteFile(id: string): Promise<void> {
-  const response = await fetch(`http://localhost:3001/trash/files/${id}`, {
+  const response = await fetch(`http://localhost:3001/trash/purge/file/${id}`, {
     method: "DELETE",
   });
   await ensureSuccess(response);
 }
 
 export async function permanentlyDeleteFolder(id: string): Promise<void> {
-  const response = await fetch(`http://localhost:3001/trash/folders/${id}`, {
-    method: "DELETE",
-  });
+  const response = await fetch(
+    `http://localhost:3001/trash/purge/folder/${id}`,
+    {
+      method: "DELETE",
+    },
+  );
   await ensureSuccess(response);
 }

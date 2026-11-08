@@ -24,6 +24,8 @@ export abstract class TrashRepository {
     folderId: string,
     parentId: string | null,
   ): Promise<Folder | undefined>;
+  abstract permanentlyDeleteFile(fileId: string): Promise<void>;
+  abstract permanentlyDeleteFolder(folderId: string): Promise<void>;
 }
 
 @Injectable()
@@ -101,7 +103,9 @@ export class DrizzleTrashRepository implements TrashRepository {
     const [folder] = await this.db
       .select()
       .from(schema.folders)
-      .where(and(eq(schema.folders.id, folderId), eq(schema.folders.deleted, true)));
+      .where(
+        and(eq(schema.folders.id, folderId), eq(schema.folders.deleted, true)),
+      );
 
     return folder;
   }
@@ -113,9 +117,25 @@ export class DrizzleTrashRepository implements TrashRepository {
     const [restoredFolder] = await this.db
       .update(schema.folders)
       .set({ deleted: false, parentId })
-      .where(and(eq(schema.folders.id, folderId), eq(schema.folders.deleted, true)))
+      .where(
+        and(eq(schema.folders.id, folderId), eq(schema.folders.deleted, true)),
+      )
       .returning();
 
     return restoredFolder;
+  }
+
+  async permanentlyDeleteFile(fileId: string): Promise<void> {
+    await this.db
+      .delete(schema.files)
+      .where(and(eq(schema.files.id, fileId), eq(schema.files.deleted, true)));
+  }
+
+  async permanentlyDeleteFolder(folderId: string): Promise<void> {
+    await this.db
+      .delete(schema.folders)
+      .where(
+        and(eq(schema.folders.id, folderId), eq(schema.folders.deleted, true)),
+      );
   }
 }

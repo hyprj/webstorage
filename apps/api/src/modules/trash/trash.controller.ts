@@ -34,7 +34,7 @@ export class TrashController {
     return this.trashService.restoreFolder(folderId);
   }
 
-  @Delete('files/:fileId')
+  @Delete('purge/file/:fileId')
   @HttpCode(HttpStatus.NO_CONTENT)
   async permanentlyDeleteFile(
     @Param('fileId', new ParseUUIDPipe({ version: '4' })) fileId: string,
@@ -42,7 +42,8 @@ export class TrashController {
     await this.trashService.permanentlyDeleteFile(fileId);
   }
 
-  @Delete('folders/:folderId')
+  @Delete('purge/folder/:folderId')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async permanentlyDeleteFolder(
     @Param('folderId', new ParseUUIDPipe({ version: '4' })) folderId: string,
   ) {

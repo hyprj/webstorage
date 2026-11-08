@@ -9,8 +9,10 @@ describe('TrashService', () => {
   let trashRepository: {
     findDeleted: Mock<TrashRepository['findDeleted']>;
     findDeletedFile: Mock<TrashRepository['findDeletedFile']>;
+    permanentlyDeleteFile: Mock<TrashRepository['permanentlyDeleteFile']>;
     restoreFile: Mock<TrashRepository['restoreFile']>;
     findDeletedFolder: Mock<TrashRepository['findDeletedFolder']>;
+    permanentlyDeleteFolder: Mock<TrashRepository['permanentlyDeleteFolder']>;
     restoreFolder: Mock<TrashRepository['restoreFolder']>;
   };
   let foldersRepository: {
@@ -24,8 +26,11 @@ describe('TrashService', () => {
     trashRepository = {
       findDeleted: vi.fn<TrashRepository['findDeleted']>(),
       findDeletedFile: vi.fn<TrashRepository['findDeletedFile']>(),
+      permanentlyDeleteFile: vi.fn<TrashRepository['permanentlyDeleteFile']>(),
       restoreFile: vi.fn<TrashRepository['restoreFile']>(),
       findDeletedFolder: vi.fn<TrashRepository['findDeletedFolder']>(),
+      permanentlyDeleteFolder:
+        vi.fn<TrashRepository['permanentlyDeleteFolder']>(),
       restoreFolder: vi.fn<TrashRepository['restoreFolder']>(),
     };
     foldersRepository = {
@@ -45,7 +50,11 @@ describe('TrashService', () => {
   });
 
   it('restores a root file without creating folders', async () => {
-    const file = { id: 'file-id', folderId: null, originalLocation: null } as File;
+    const file = {
+      id: 'file-id',
+      folderId: null,
+      originalLocation: null,
+    } as File;
     trashRepository.findDeletedFile.mockResolvedValue(file);
     trashRepository.restoreFile.mockResolvedValue(file);
 
@@ -108,5 +117,39 @@ describe('TrashService', () => {
     await expect(service.restoreFile('missing-file')).rejects.toThrow(
       NotFoundException,
     );
+  });
+
+  it('permanently deletes a file from trash', async () => {
+    trashRepository.findDeletedFile.mockResolvedValue({
+      id: 'file-id',
+    } as File);
+
+    await expect(
+      service.permanentlyDeleteFile('file-id'),
+    ).resolves.toBeUndefined();
+    expect(trashRepository.permanentlyDeleteFile).toHaveBeenCalledWith(
+      'file-id',
+    );
+  });
+
+  it('permanently deletes a folder from trash', async () => {
+    trashRepository.findDeletedFolder.mockResolvedValue({
+      id: 'folder-id',
+    } as Folder);
+
+    await expect(
+      service.permanentlyDeleteFolder('folder-id'),
+    ).resolves.toBeUndefined();
+    expect(trashRepository.permanentlyDeleteFolder).toHaveBeenCalledWith(
+      'folder-id',
+    );
+  });
+
+  it('throws when the folder is not in trash', async () => {
+    trashRepository.findDeletedFolder.mockResolvedValue(undefined);
+
+    await expect(
+      service.permanentlyDeleteFolder('missing-folder'),
+    ).rejects.toThrow(NotFoundException);
   });
 });

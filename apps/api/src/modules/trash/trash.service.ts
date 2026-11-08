@@ -63,14 +63,24 @@ export class TrashService {
     }
   }
 
-  async permanentlyDeleteFile(_fileId: string): Promise<never> {
-    // TODO: permanently remove the file from storage and the database.
-    throw new NotImplementedException();
+  async permanentlyDeleteFile(fileId: string): Promise<void> {
+    const file = await this.trashRepository.findDeletedFile(fileId);
+
+    if (!file) {
+      throw new NotFoundException(`File ${fileId} not found in trash`);
+    }
+
+    await this.trashRepository.permanentlyDeleteFile(fileId);
   }
 
-  async permanentlyDeleteFolder(_folderId: string): Promise<never> {
-    // this will be implemented as 'purge folder' later on
-    throw new NotImplementedException();
+  async permanentlyDeleteFolder(folderId: string): Promise<void> {
+    const folder = await this.trashRepository.findDeletedFolder(folderId);
+
+    if (!folder) {
+      throw new NotFoundException(`Folder ${folderId} not found in trash`);
+    }
+
+    await this.trashRepository.permanentlyDeleteFolder(folderId);
   }
 
   private async ensureFolderPath(folderPath: string): Promise<string | null> {
@@ -105,5 +115,4 @@ export class TrashService {
 
     return parentId;
   }
-
 }

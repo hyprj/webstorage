@@ -120,14 +120,14 @@ export const handlers = [
       : notFound(`Folder ${id} does not exist in trash`);
   }),
 
-  http.delete(`${apiUrl}/trash/files/:id`, ({ params }) => {
+  http.delete(`${apiUrl}/trash/purge/file/:id`, ({ params }) => {
     const id = String(params.id);
     return permanentlyDeleteFile(id)
       ? new HttpResponse(null, { status: 204 })
       : notFound(`File ${id} does not exist in trash`);
   }),
 
-  http.delete(`${apiUrl}/trash/folders/:id`, ({ params }) => {
+  http.delete(`${apiUrl}/trash/purge/folder/:id`, ({ params }) => {
     const id = String(params.id);
     return permanentlyDeleteFolder(id)
       ? new HttpResponse(null, { status: 204 })
