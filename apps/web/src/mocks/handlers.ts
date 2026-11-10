@@ -15,10 +15,7 @@ import {
   restoreFolder,
   setDefaultDataRetention,
 } from "./db";
-import {
-  retentionTimes,
-  type RetentionTime,
-} from "../features/dataRetention/api";
+import { retentionSeconds } from "../features/dataRetention/api";
 
 const apiUrl = "http://localhost:3001";
 
@@ -82,29 +79,32 @@ export const handlers = [
 
   http.get(`${apiUrl}/trash`, () => HttpResponse.json(listTrash())),
 
-  http.get(`${apiUrl}/data-retention/default-data-retention`, () =>
+  http.get(`${apiUrl}/data-retention/default`, () =>
     HttpResponse.json(getDefaultDataRetention()),
   ),
 
-  http.post(
-    `${apiUrl}/data-retention/default-data-retention`,
-    async ({ request }) => {
-      const body = (await request.json()) as { time?: unknown };
-      if (
-        typeof body.time !== "string" ||
-        !retentionTimes.includes(body.time as RetentionTime)
-      ) {
-        return HttpResponse.json(
-          { message: "Invalid retention time" },
-          { status: 400 },
-        );
-      }
-
+  http.post(`${apiUrl}/data-retention/default`, async ({ request }) => {
+    const body = (await request.json()) as { periodSeconds?: unknown };
+    if (
+      body.periodSeconds !== null &&
+      (typeof body.periodSeconds !== "number" ||
+        !(
+          Object.values(retentionSeconds) as readonly (number | null)[]
+        ).includes(body.periodSeconds))
+    ) {
       return HttpResponse.json(
-        setDefaultDataRetention({ time: body.time as RetentionTime }),
+        { message: "Invalid retention time" },
+        { status: 400 },
       );
-    },
-  ),
+    }
+
+    return HttpResponse.json(
+      setDefaultDataRetention({
+        id: 1,
+        periodSeconds: body.periodSeconds as number | null,
+      }),
+    );
+  }),
 
   http.patch(`${apiUrl}/trash/files/:id/restore`, ({ params }) => {
     const id = String(params.id);

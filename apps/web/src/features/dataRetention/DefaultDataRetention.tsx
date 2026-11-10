@@ -5,6 +5,7 @@ import { Icon } from "../../components/Icon";
 import { Select } from "../../components/Select";
 import {
   getDefaultDataRetention,
+  getRetentionTime,
   retentionTimes,
   saveDefaultDataRetention,
   type RetentionTime,
@@ -15,21 +16,24 @@ export function DefaultDataRetention() {
   const retentionQuery = useQuery({
     queryKey: ["data-retention", "default"],
     queryFn: getDefaultDataRetention,
+    refetchOnMount: "always",
   });
   const [selectedTime, setSelectedTime] = useState<RetentionTime | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const currentTime = selectedTime ?? retentionQuery.data?.time ?? "1h";
+  const savedTime = retentionQuery.data
+    ? getRetentionTime(retentionQuery.data.periodSeconds)
+    : undefined;
+  const currentTime = selectedTime ?? savedTime;
 
   const saveMutation = useMutation({
     mutationFn: saveDefaultDataRetention,
     onSuccess: (data) => {
       queryClient.setQueryData(["data-retention", "default"], data);
-      setSelectedTime(data.time);
+      setSelectedTime(null);
     },
   });
 
   const isLoading = retentionQuery.isLoading;
-  const error = retentionQuery.error ?? saveMutation.error;
 
   return (
     <article className="max-w-2xl rounded-panel border border-border bg-surface p-6">
@@ -45,7 +49,12 @@ export function DefaultDataRetention() {
                 variant="ghost"
                 size="sm"
                 className="min-h-7 px-2"
-                onClick={() => setIsEditing(true)}
+                disabled={savedTime === undefined || retentionQuery.isError}
+                onClick={() => {
+                  saveMutation.reset();
+                  setSelectedTime(null);
+                  setIsEditing(true);
+                }}
                 aria-label="Edit default retention"
               >
                 <Icon name="pencil" className="size-3.5" aria-hidden="true" />
@@ -60,9 +69,15 @@ export function DefaultDataRetention() {
         </div>
       </div>
 
-      {error && (
+      {retentionQuery.error && (
         <p role="alert" className="mt-5 text-sm text-danger-600">
-          Failed to load default retention: {error.message}
+          Failed to load default retention: {retentionQuery.error.message}
+        </p>
+      )}
+
+      {saveMutation.error && (
+        <p role="alert" className="mt-5 text-sm text-danger-600">
+          Failed to save default retention: {saveMutation.error.message}
         </p>
       )}
 
@@ -70,16 +85,28 @@ export function DefaultDataRetention() {
         <div>
           <dt className="text-muted">Status</dt>
           <dd className="mt-1 font-medium">
-            {currentTime === "disabled" ? "Disabled" : "Configured"}
+            {isLoading
+              ? "Loading..."
+              : savedTime === undefined
+                ? "Unavailable"
+                : savedTime === "disabled"
+                  ? "Disabled"
+                  : "Configured"}
           </dd>
         </div>
         <div>
           <dt className="text-muted">Retention period</dt>
-          <dd className="mt-1 font-medium">{currentTime}</dd>
+          <dd className="mt-1 font-medium">
+            {isLoading
+              ? "Loading..."
+              : savedTime === "disabled"
+                ? "Disabled"
+                : (savedTime ?? "—")}
+          </dd>
         </div>
       </dl>
 
-      {isEditing && (
+      {isEditing && currentTime !== undefined && (
         <div className="mt-6 grid gap-4 border-t border-border pt-5 sm:grid-cols-[minmax(0,16rem)_auto] sm:items-end">
           <Select
             label="Retention period"

@@ -32,7 +32,7 @@ const files: MockFile[] = [
   },
 ];
 
-let defaultDataRetention: DefaultDataRetention = { time: "1h" };
+let defaultDataRetention: DefaultDataRetention = { id: 1, periodSeconds: null };
 
 export function getDefaultDataRetention(): DefaultDataRetention {
   return defaultDataRetention;
@@ -92,7 +92,7 @@ export function createFile(
 }
 
 export function moveFileToTrash(id: string): boolean {
-  const file = files.find((item) => item.id === id);
+  const file = files.find((item) => item.id === id && !item.deleted);
   if (!file) {
     return false;
   }
@@ -101,7 +101,7 @@ export function moveFileToTrash(id: string): boolean {
 }
 
 export function moveFolderToTrash(id: string): boolean {
-  const folder = folders.find((item) => item.id === id);
+  const folder = folders.find((item) => item.id === id && !item.deleted);
   if (!folder) {
     return false;
   }

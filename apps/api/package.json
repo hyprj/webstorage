@@ -23,7 +23,7 @@
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts",
     "db:push": "dotenv -e ../../.env -- drizzle-kit push",
     "db:studio": "dotenv -e ../../.env -- drizzle-kit studio",
-    "db:seed": "dotenv -e ../../.env -- ts-node -r tsconfig-paths/register src/db/seed.ts"
+    "db:seed": "dotenv -e ../../.env -- node src/db/seed.cjs"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",

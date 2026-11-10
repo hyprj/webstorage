@@ -6,6 +6,11 @@ export function useDeleteFolder() {
 
   return useMutation({
     mutationFn: deleteFolder,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["folders"] }),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["folders"] }),
+        queryClient.invalidateQueries({ queryKey: ["files"] }),
+        queryClient.invalidateQueries({ queryKey: ["trash"] }),
+      ]),
   });
 }

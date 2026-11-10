@@ -1,6 +1,9 @@
 export const retentionPeriods = {
-  hour: 60 * 60,
-  day: 24 * 60 * 60,
-  week: 7 * 24 * 60 * 60,
-  month: 30 * 24 * 60 * 60,
+  hour: 3600,
+  day: 86400,
+  week: 604800,
+  month: 2592000,
 } as const;
+
+export type DEFAULT_RETENTION_PERIOD =
+  null | (typeof retentionPeriods)[keyof typeof retentionPeriods];

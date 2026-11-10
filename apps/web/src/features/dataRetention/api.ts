@@ -1,7 +1,6 @@
 export const retentionTimes = [
   "disabled",
   "1h",
-  "12h",
   "1day",
   "7 days",
   "30 days",
@@ -10,10 +9,29 @@ export const retentionTimes = [
 export type RetentionTime = (typeof retentionTimes)[number];
 
 export type DefaultDataRetention = {
-  time: RetentionTime;
+  id: number;
+  periodSeconds: number | null;
 };
 
-const endpoint = "http://localhost:3001/data-retention/default-data-retention";
+export const retentionSeconds = {
+  disabled: null,
+  "1h": 3600,
+  "1day": 86400,
+  "7 days": 604800,
+  "30 days": 2592000,
+} as const satisfies Record<RetentionTime, number | null>;
+
+export function getRetentionTime(periodSeconds: number | null): RetentionTime {
+  const time = retentionTimes.find(
+    (time) => retentionSeconds[time] === periodSeconds,
+  );
+  if (time === undefined) {
+    throw new Error("Unsupported retention period returned by the server");
+  }
+  return time;
+}
+
+const endpoint = "http://localhost:3001/data-retention/default";
 
 async function ensureSuccess(response: Response) {
   if (response.ok) {
@@ -27,7 +45,9 @@ async function ensureSuccess(response: Response) {
 export async function getDefaultDataRetention(): Promise<DefaultDataRetention> {
   const response = await fetch(endpoint);
   await ensureSuccess(response);
-  return response.json() as Promise<DefaultDataRetention>;
+  const data: DefaultDataRetention = await response.json();
+  getRetentionTime(data.periodSeconds);
+  return data;
 }
 
 export async function saveDefaultDataRetention(
@@ -36,7 +56,7 @@ export async function saveDefaultDataRetention(
   const response = await fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ time }),
+    body: JSON.stringify({ periodSeconds: retentionSeconds[time] }),
   });
   await ensureSuccess(response);
   return response.json() as Promise<DefaultDataRetention>;

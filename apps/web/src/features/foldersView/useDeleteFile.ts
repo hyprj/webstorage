@@ -6,6 +6,10 @@ export function useDeleteFile() {
 
   return useMutation({
     mutationFn: deleteFile,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["files"] }),
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["files"] }),
+        queryClient.invalidateQueries({ queryKey: ["trash"] }),
+      ]),
   });
 }
