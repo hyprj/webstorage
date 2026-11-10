@@ -54,10 +54,12 @@ export async function saveDefaultDataRetention(
   time: RetentionTime,
 ): Promise<DefaultDataRetention> {
   const response = await fetch(endpoint, {
-    method: "POST",
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ periodSeconds: retentionSeconds[time] }),
   });
   await ensureSuccess(response);
-  return response.json() as Promise<DefaultDataRetention>;
+  const data: DefaultDataRetention = await response.json();
+  getRetentionTime(data.periodSeconds);
+  return data;
 }

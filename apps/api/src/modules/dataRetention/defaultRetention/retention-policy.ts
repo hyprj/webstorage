@@ -1,4 +1,5 @@
 export const retentionPeriods = {
+  default: null,
   hour: 3600,
   day: 86400,
   week: 604800,
@@ -6,4 +7,4 @@ export const retentionPeriods = {
 } as const;
 
 export type DEFAULT_RETENTION_PERIOD =
-  null | (typeof retentionPeriods)[keyof typeof retentionPeriods];
+  (typeof retentionPeriods)[keyof typeof retentionPeriods];

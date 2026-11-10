@@ -4,9 +4,13 @@ import { DRIZZLE } from '../../../db/drizzle.provider';
 import * as schema from '../../../db/schema';
 import type { DefaultRetention } from '../../../db/schema';
 import { eq } from 'drizzle-orm';
+import { DEFAULT_RETENTION_PERIOD } from './retention-policy';
 
 export abstract class DefaultRetentionRepository {
   abstract getDefault(): Promise<DefaultRetention | undefined>;
+  abstract updateDefault(
+    periodSeconds: DEFAULT_RETENTION_PERIOD,
+  ): Promise<DefaultRetention | undefined>;
 }
 
 @Injectable()
@@ -21,6 +25,16 @@ export class DrizzleDefaultRetentionRepository implements DefaultRetentionReposi
       .select()
       .from(schema.defaultRetention)
       .where(eq(schema.defaultRetention.id, 1));
+
+    return defaultPeriod;
+  }
+
+  async updateDefault(periodSeconds: DEFAULT_RETENTION_PERIOD) {
+    const [defaultPeriod] = await this.db
+      .update(schema.defaultRetention)
+      .set({ periodSeconds })
+      .where(eq(schema.defaultRetention.id, 1))
+      .returning();
 
     return defaultPeriod;
   }

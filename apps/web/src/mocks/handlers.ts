@@ -83,7 +83,7 @@ export const handlers = [
     HttpResponse.json(getDefaultDataRetention()),
   ),
 
-  http.post(`${apiUrl}/data-retention/default`, async ({ request }) => {
+  http.patch(`${apiUrl}/data-retention/default`, async ({ request }) => {
     const body = (await request.json()) as { periodSeconds?: unknown };
     if (
       body.periodSeconds !== null &&
