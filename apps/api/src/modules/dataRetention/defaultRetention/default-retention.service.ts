@@ -61,11 +61,9 @@ export class DefaultRetentionService {
       return true;
     }
 
-    const retentionPeriodTime = retentionPeriod.periodSeconds;
-    const entryDeletedTime = Math.floor(entryDeletedAt?.getTime() / 1000);
-
     return (
-      entryDeletedTime + retentionPeriodTime <= Math.floor(Date.now() / 1000)
+      entryDeletedAt.getTime() + retentionPeriod.periodSeconds * 1000 <=
+      Date.now()
     );
   }
 }

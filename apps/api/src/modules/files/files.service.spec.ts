@@ -13,6 +13,7 @@ describe('FilesService', () => {
     markDeleted: Mock<FilesRepository['markDeleted']>;
   };
   let foldersRepository: {
+    markDeleted: Mock<FoldersRepository['markDeleted']>;
     findChildren: Mock<FoldersRepository['findChildren']>;
     findById: Mock<FoldersRepository['findById']>;
     create: Mock<FoldersRepository['create']>;
@@ -27,6 +28,7 @@ describe('FilesService', () => {
       markDeleted: vi.fn<FilesRepository['markDeleted']>(),
     };
     foldersRepository = {
+      markDeleted: vi.fn<FoldersRepository['markDeleted']>(),
       findChildren: vi.fn<FoldersRepository['findChildren']>(),
       findById: vi.fn<FoldersRepository['findById']>(),
       create: vi.fn<FoldersRepository['create']>(),
