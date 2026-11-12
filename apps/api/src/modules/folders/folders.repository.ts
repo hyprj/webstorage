@@ -67,7 +67,7 @@ export class DrizzleFoldersRepository implements FoldersRepository {
   ): Promise<Folder | undefined> {
     const [deletedFolder] = await this.db
       .update(schema.folders)
-      .set({ deleted: true, originalLocation })
+      .set({ originalLocation, deleted: true, deletedAt: new Date() })
       .where(and(eq(schema.folders.id, id), eq(schema.folders.deleted, false)))
       .returning();
 

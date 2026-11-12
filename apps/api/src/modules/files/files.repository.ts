@@ -68,7 +68,7 @@ export class DrizzleFilesRepository implements FilesRepository {
   ): Promise<File | undefined> {
     const [deletedFile] = await this.db
       .update(schema.files)
-      .set({ deleted: true, originalLocation })
+      .set({ originalLocation, deleted: true, deletedAt: new Date() })
       .where(eq(schema.files.id, id))
       .returning();
 

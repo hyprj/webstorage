@@ -92,7 +92,7 @@ export class DrizzleTrashRepository implements TrashRepository {
   ): Promise<File | undefined> {
     const [restoredFile] = await this.db
       .update(schema.files)
-      .set({ deleted: false, folderId })
+      .set({ deleted: false, deletedAt: null, folderId })
       .where(and(eq(schema.files.id, fileId), eq(schema.files.deleted, true)))
       .returning();
 
@@ -116,7 +116,7 @@ export class DrizzleTrashRepository implements TrashRepository {
   ): Promise<Folder | undefined> {
     const [restoredFolder] = await this.db
       .update(schema.folders)
-      .set({ deleted: false, parentId })
+      .set({ deleted: false, deletedAt: null, parentId })
       .where(
         and(eq(schema.folders.id, folderId), eq(schema.folders.deleted, true)),
       )
