@@ -10,10 +10,6 @@ export type TrashItems = { files: File[]; folders: Folder[] };
 export abstract class TrashRepository {
   abstract findDeleted(folderId: string | null): Promise<TrashItems>;
   abstract findNonDeletedFile(fileId: string): Promise<File | undefined>;
-  abstract deleteFile(
-    fileId: string,
-    originalLocation: string | null,
-  ): Promise<File | undefined>;
   abstract findDeletedFile(fileId: string): Promise<File | undefined>;
   abstract restoreFile(
     fileId: string,
@@ -62,19 +58,6 @@ export class DrizzleTrashRepository implements TrashRepository {
       .where(and(eq(schema.files.id, fileId), eq(schema.files.deleted, false)));
 
     return file;
-  }
-
-  async deleteFile(
-    fileId: string,
-    originalLocation: string | null,
-  ): Promise<File | undefined> {
-    const [deletedFile] = await this.db
-      .update(schema.files)
-      .set({ deleted: true, originalLocation })
-      .where(eq(schema.files.id, fileId))
-      .returning();
-
-    return deletedFile;
   }
 
   async findDeletedFile(fileId: string): Promise<File | undefined> {

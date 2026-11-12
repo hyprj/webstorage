@@ -1,16 +1,20 @@
 import {
   Injectable,
+  ForbiddenException,
+  InternalServerErrorException,
   NotFoundException,
   NotImplementedException,
 } from '@nestjs/common';
 import { FoldersRepository } from '../folders/folders.repository';
 import { TrashItems, TrashRepository } from './trash.repository';
+import { DefaultRetentionService } from '../dataRetention/defaultRetention/default-retention.service';
 
 @Injectable()
 export class TrashService {
   constructor(
     private readonly trashRepository: TrashRepository,
     private readonly foldersRepository: FoldersRepository,
+    private readonly defaultRetentionService: DefaultRetentionService,
   ) {}
 
   async getTrash(folderId: string | null = null): Promise<TrashItems> {
@@ -70,7 +74,22 @@ export class TrashService {
       throw new NotFoundException(`File ${fileId} not found in trash`);
     }
 
-    await this.trashRepository.permanentlyDeleteFile(fileId);
+    if (!file.deletedAt) {
+      throw new InternalServerErrorException('Trashed file has no deletedAt');
+    }
+
+    const canDelete =
+      await this.defaultRetentionService.canPermanentlyDeleteEntry(
+        file.deletedAt,
+      );
+
+    if (canDelete) {
+      await this.trashRepository.permanentlyDeleteFile(fileId);
+    } else {
+      throw new ForbiddenException(
+        'This file cannot be permanently deleted until its retention period has elapsed',
+      );
+    }
   }
 
   async permanentlyDeleteFolder(folderId: string): Promise<void> {
@@ -78,6 +97,21 @@ export class TrashService {
 
     if (!folder) {
       throw new NotFoundException(`Folder ${folderId} not found in trash`);
+    }
+
+    if (!folder.deletedAt) {
+      throw new InternalServerErrorException('Trashed folder has no deletedAt');
+    }
+
+    const canDelete =
+      await this.defaultRetentionService.canPermanentlyDeleteEntry(
+        folder.deletedAt,
+      );
+
+    if (!canDelete) {
+      throw new ForbiddenException(
+        'This folder cannot be permanently deleted until its retention period has elapsed',
+      );
     }
 
     await this.trashRepository.permanentlyDeleteFolder(folderId);

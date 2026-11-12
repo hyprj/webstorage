@@ -4,9 +4,10 @@ import { FoldersModule } from '../folders/folders.module';
 import { TrashController } from './trash.controller';
 import { DrizzleTrashRepository, TrashRepository } from './trash.repository';
 import { TrashService } from './trash.service';
+import { DefaultRetentionModule } from '../dataRetention/defaultRetention/default-retention.module';
 
 @Module({
-  imports: [DrizzleModule, FoldersModule],
+  imports: [DrizzleModule, FoldersModule, DefaultRetentionModule],
   controllers: [TrashController],
   providers: [
     TrashService,

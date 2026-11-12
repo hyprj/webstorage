@@ -16,7 +16,7 @@ export class DefaultRetentionService {
 
     if (!defaultRetention) {
       throw new InternalServerErrorException(
-        'Default retention is not configured',
+        'Default retention period is not configured',
       );
     }
 
@@ -28,7 +28,9 @@ export class DefaultRetentionService {
   ): Promise<DefaultRetention> {
     if (
       periodSeconds !== null &&
-      !Object.values(retentionPeriods).some((period) => period === periodSeconds)
+      !Object.values(retentionPeriods).some(
+        (period) => period === periodSeconds,
+      )
     ) {
       throw new BadRequestException(
         `${periodSeconds} doesn't match expected value`,
@@ -44,5 +46,26 @@ export class DefaultRetentionService {
     }
 
     return defaultPeriod;
+  }
+
+  async canPermanentlyDeleteEntry(entryDeletedAt: Date) {
+    const retentionPeriod = await this.repository.getDefault();
+
+    if (!retentionPeriod) {
+      throw new InternalServerErrorException(
+        'Default retention period is not configured',
+      );
+    }
+
+    if (!retentionPeriod.periodSeconds) {
+      return true;
+    }
+
+    const retentionPeriodTime = retentionPeriod.periodSeconds;
+    const entryDeletedTime = Math.floor(entryDeletedAt?.getTime() / 1000);
+
+    return (
+      entryDeletedTime + retentionPeriodTime <= Math.floor(Date.now() / 1000)
+    );
   }
 }
