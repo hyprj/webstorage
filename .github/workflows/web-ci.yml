@@ -1,9 +1,21 @@
 name: Web CI
 
-# Run on push and pull request, any branch.
+# Run when frontend sources or build configuration change, on any branch.
 on:
   push:
+    paths:
+      - "apps/web/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/web-ci.yml"
   pull_request:
+    paths:
+      - "apps/web/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/web-ci.yml"
 
 permissions:
   contents: read
